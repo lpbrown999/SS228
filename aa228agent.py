@@ -8,7 +8,7 @@ import pandas as pd
 Testing the potential for random actions
 """
 class AA228agent():
-    def __init__(self, dolphin, gamestate, self_port, opponent_port, startTF, log_file):
+    def __init__(self, dolphin, gamestate, self_port, opponent_port, log_file):
         
         #Self info about game state
         self.gamestate = gamestate
@@ -20,13 +20,18 @@ class AA228agent():
         #Self info about ports
         self.self_port = self_port
         self.opp_port = opponent_port
-        self.startTF = startTF
 
         self.controller = melee.controller.Controller(port=self_port, dolphin=dolphin) 
         self.framedata = melee.framedata.FrameData()
 
         #Buttons to skip when pressing buttons
         self.button_skip_list = [Button.BUTTON_MAIN, Button.BUTTON_C, Button.BUTTON_L, Button.BUTTON_R]
+
+        #Information for reduced inputs
+        self.frames_between_inputs = 12
+        self.frames_since_last_input = 12
+        self.frames_between_csv_output = 300
+        self.last_action = 0
 
         #Define values for sticks,buttons
         self.stickvals = np.linspace(0,1,3)
@@ -39,12 +44,11 @@ class AA228agent():
 
     def simple_button_press(self, button_press_vec):
         #Inputs as np arary 6x1
+        #(3**2)*(2**4) = 144 actions
         #mx my L A B X
 
         mx = button_press_vec[0]
-        my = button_press_vec[1]
-        #cx = button_press_vec[2]
-        #cy = button_press_vec[3]        
+        my = button_press_vec[1]       
         shoulderval = button_press_vec[2]
         a = button_press_vec[3]
         b = button_press_vec[4]
@@ -76,40 +80,34 @@ class AA228agent():
             elif (item == Button.BUTTON_X) and (x == 1):
                 self.controller.press_button(item)
             else:
-                self.controller.release_button(item)
-    
+             self.controller.release_button(item)
+        
     def act(self):
-        #Empty input
-        button_press_vec = np.array([.5,.5,0,0,0,0])
-        #(3**2)*(2**4) = 144 actions
+        #If it has been enough frames -> we need a new input
+        if self.frames_since_last_input == self.frames_between_inputs:  
+            
+            #Linear index of action
+            action_lin_idx= random.randrange(0,self.num_poss_actions-1)
 
-        rand_action_lin_idx= random.randrange(0,self.num_poss_actions-1)
-        button_list = np.array( np.unravel_index(rand_action_lin_idx,self.actions_shape), dtype=np.float)
-        button_list[0:2] = button_list[0:2]/(self.num_stickvals-1)  #0 or 1 is good for the last 4 entries, but need to map stick indexes 0,1,2 
-                                                                    #to 0 to 1 -> divide first 4 by numstickvals -1
-        #percent_chance_press_a = .05
-        #if random.random() < percent_chance_press_a:
-        #    button_press_vec[6] = 1
+            #map the linear index to the button list, input it to simple button press
+            button_list = np.array( np.unravel_index(action_lin_idx,self.actions_shape), dtype=np.float)
+            button_list[0:2] = button_list[0:2]/(self.num_stickvals-1)  #0 or 1 is good for the last 4 entries, but need to map stick indexes 0,1,2 
+            self.simple_button_press(button_list)
 
-        self.simple_button_press(button_list)
-        self.last_action = button_list          #Record last action so we can put into the log file
-        self.jumper_logger()
+            #Reset counter, recored the last action taken
+            self.frames_since_last_input == 0
+            self.last_action = action_lin_idx
+        else:
+            self.frames_since_last_input += 1
 
-    def jumper(self):
-        #Empty input
-        button_press_vec = np.array([.5,.5,.5,.5,0,0,0,0])
-        self.jumper_logger()
-
-
-    def jumper_logger(self):
+    def state_action_logger(self):
         #Current state of self and other bot
-        self_state_current = np.array(self.self_state.tolist())
-        opp_state_current  = np.array(self.opp_state.tolist())
-        combined_state_action = np.concatenate((np.array(self.self_state.tolist()),np.array(self.opp_state.tolist()),self.last_action),axis=0)
-        #print(cat_state)
+        #Our state, opponent state, our last action
+        # print((np.array(self.self_state.tolist()),np.array(self.opp_state.tolist()),np.array(self.last_action)))
+        combined_state_action = np.concatenate((np.array(self.self_state.tolist()),np.array(self.opp_state.tolist()),np.array([self.last_action])),axis=0)
         
         #Log the array
-        if np.size(self.log_array,axis=0) == 100:
+        if np.size(self.log_array,axis=0) == self.frames_between_csv_output:
             df = pd.DataFrame(self.log_array)
             df.to_csv(self.log_file, mode='a', header=False, index = False)
             self.log_array = combined_state_action
@@ -117,10 +115,6 @@ class AA228agent():
             self.log_array = combined_state_action
         else:
             self.log_array = np.vstack((self.log_array, combined_state_action))
-
-
-    def full_logger(self):
-        pass
 
 
 
