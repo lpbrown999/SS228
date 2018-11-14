@@ -1,0 +1,12 @@
+
+##Temporarily commented - think I sorted out the pipes.
+#Sometimes exit does not occur cleanly and we need to reset the pipes for the controller
+#parser.add_argument('--resetpipes','-r',action = 'store_true')
+# if args.resetpipes:
+#     print("Resetting Pipes as reqeusted by -r argument.")
+#     shutil.rmtree('/Users/liam/Library/Application Support/Dolphin/Pipes')
+#     shutil.rmtree('/Users/liam/Library/Application Support/Dolphin/MemoryWatcher')
+
+# supportedcharacters = [melee.enums.Character.PEACH, melee.enums.Character.CPTFALCON, melee.enums.Character.FALCO, \
+    # melee.enums.Character.FOX, melee.enums.Character.SAMUS, melee.enums.Character.ZELDA, melee.enums.Character.SHEIK, \
+    # melee.enums.Character.PIKACHU, melee.enums.Character.JIGGLYPUFF, melee.enums.Character.MARTH]
