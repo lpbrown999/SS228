@@ -25,8 +25,6 @@ from aa228agent import AA228agent
 
 #Or use global approx with "linear" basis functions
 
-#Work on start up flags. -1 aa228, -2 None?
-
 def check_port(value):
     ivalue = int(value)
     if ivalue < 1 or ivalue > 4:
@@ -45,8 +43,6 @@ parser.add_argument('--mode','-m',type=int,default = 1,
 parser.add_argument('--logging','-l', action='store_true',
                     help='Logging of Gamestates')
 args = parser.parse_args()
-
-
 
 #Setup the ports based on what mode we selected
 #   Options here are:
@@ -74,16 +70,19 @@ def signal_handler(signal, frame):
     print("Shutting down cleanly...")
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
+print("Dolphing connected.")
 
 #Initialize all the agents that we have designated are bots by the port type, and connect the controllers
 agent1 = None
 agent2 = None
 if port1_type == melee.enums.ControllerType.STANDARD:
-    agent1 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, startTF = True)
+    agent1 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, startTF = True, log_file = 'agent1_log.csv')
     agent1.controller.connect()
+    print("Agent1 controller connected.")
 if port2_type == melee.enums.ControllerType.STANDARD:
-    agent2 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, startTF = True)
+    agent2 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, startTF = True, log_file = 'agent2_log.csv')
     agent2.controller.connect()
+    print("Agent2 controller connected.")
 
 #Main loop
 while True:
