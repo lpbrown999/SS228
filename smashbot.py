@@ -9,6 +9,8 @@ import numpy as np
 import pandas as pd
 
 import shutil
+import select
+
 # from esagent import ESAgent -> could make Agent 2 this agent.
 from aa228agent import AA228agent
 
@@ -23,7 +25,14 @@ from aa228agent import AA228agent
 #can back propogate our reward to "nearest neighbor states" similar to section 4.5.
 #eligibility traces
 
-#Or use global approx with "linear" basis functions
+def enter_detected():
+
+    # poll stdin with 0 seconds for timeout
+    i,o,e = select.select([sys.stdin],[],[],0)
+    if(i):
+        return True
+    else:
+        return False
 
 def check_port(value):
     ivalue = int(value)
@@ -76,28 +85,48 @@ print("Dolphing connected.")
 agent1 = None
 agent2 = None
 if port1_type == melee.enums.ControllerType.STANDARD:
-    agent1 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, startTF = True, log_file = 'agent1_log.csv')
+    agent1 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, log_file = 'agent1_log.csv')
     agent1.controller.connect()
     print("Agent1 controller connected.")
 if port2_type == melee.enums.ControllerType.STANDARD:
-    agent2 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, startTF = True, log_file = 'agent2_log.csv')
+    agent2 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, log_file = 'agent2_log.csv')
     agent2.controller.connect()
     print("Agent2 controller connected.")
 
 #Main loop
 while True:
+
+    if enter_detected():
+        print('Keyboard break detected: cleaning pipes, flusshing empty inputs.')
+        if agent1:
+            agent1.controller.empty_input()
+            agent1.controller.flush()
+        if agent2:
+            agent2.controller.empty_input()
+            agent2.controller.flush()
+
+        dolphin.terminate()
+        sys.exit(0)
+
     #"step" to the next frame -> Game operates at 60hz (16ms per frame), warn if going too slow
     gamestate.step()
     if(gamestate.processingtime * 1000 > 12):
         print("WARNING: Last frame took " + str(gamestate.processingtime*1000) + "ms to process.")
     
+
+
+
+
+
     #In game -> act
     if gamestate.menu_state == melee.enums.Menu.IN_GAME:
         
         if agent1:
             agent1.act()
+            #agent1.state_action_logger()
         if agent2:
             agent2.act()
+            agent2.state_action_logger()
 
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
@@ -129,11 +158,21 @@ while True:
     elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
     	#FINAL_DESTINATION
     	#BATTLEFIELD
-        if agent2:
+        if agent1 and agent2:
+            melee.menuhelper.choosestage(stage=melee.enums.Stage.FINAL_DESTINATION,
+                            gamestate=gamestate,
+                            controller=agent1.controller)
             agent2.controller.empty_input()
-        melee.menuhelper.choosestage(stage=melee.enums.Stage.BATTLEFIELD,
-                                    gamestate=gamestate,
-                                    controller=agent1.controller)
+
+        elif agent1:
+            melee.menuhelper.choosestage(stage=melee.enums.Stage.FINAL_DESTINATION,
+                            gamestate=gamestate,
+                            controller=agent1.controller)
+        elif agent2:
+            melee.menuhelper.choosestage(stage=melee.enums.Stage.FINAL_DESTINATION,
+                            gamestate=gamestate,
+                            controller=agent2.controller)
+
 
     #Issue queued button commands
     if agent1:
