@@ -1,19 +1,22 @@
 import sys
 from pynput import keyboard
+import select
+
+# returns true if enter detected from keyboard
+def enter_detected():
+
+	# poll stdin with 0 seconds for timeout
+    i,o,e = select.select([sys.stdin],[],[],0)
+    if(i):
+    	return True
+    else:
+    	return False
 
 
-
-def on_release(key):
-	if key == keyboard.Key.ctrl:
-
-		print("ctrl detected, exiting")
-		# Stop listener
-		return False
-
-# Collect events until released
-print("Before listener")
-with keyboard.Listener(on_release=on_release) as listener:
-	listener.join()
-
-print("After listener")
-
+"""
+while(1):
+	
+	if(enter_detected()):
+		print("keyboard detected")
+		break
+"""
