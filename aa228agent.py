@@ -4,6 +4,7 @@ import random
 
 import numpy as np
 import pandas as pd
+
 """
 Testing the potential for random actions
 """
@@ -56,6 +57,7 @@ class AA228agent():
         
         buttonPressVec = np.array(np.unravel_index(actionNumber,self.actionsShape), dtype=np.float)
         buttonPressVec[0:2] = buttonPressVec[0:2]/(self.numStickVals-1)
+        print(buttonPressVec,self.gameState.frame)
 
         mx = buttonPressVec[0]
         my = buttonPressVec[1]    
@@ -99,8 +101,6 @@ class AA228agent():
     def act(self):
         
         #If it has been enough frames -> we need a new input
-        #print(self.frames_since_last_input,self.frames_between_inputs)
-        #print(self.frames_since_last_input,self.frames_between_inputs)
         if self.frames_since_last_input >= self.frames_between_inputs:  
         
             #Linear index of action
@@ -117,8 +117,9 @@ class AA228agent():
     def jumper(self):        
 
         #If it has been enough frames -> we need a new input
-        if self.frames_since_last_input == self.frames_between_inputs:  
+        if self.frames_since_last_input >= self.frames_between_inputs:  
             
+   
             #Greedy
             betaCurr = self.jumper_beta()
             bestActionTerms  = np.zeros(self.numActions)
@@ -132,15 +133,19 @@ class AA228agent():
             #Reset counter, recored the last action taken
             self.frames_since_last_input = 0
             self.lastAction = actionIdx
+        
+        #Send an empty input on the frame before we do another input
+        elif (self.frames_since_last_input == self.frames_between_inputs - 1):
+            self.simple_button_press(24)
+            self.frames_since_last_input += 1
 
-            #print(actionIdx)
         else:
             self.frames_since_last_input += 1
 
     def jumper_beta(self):
-        curr_self_state = np.array(self.selfState.tolist())
-        ax = curr_self_state[0]
-        ay = curr_self_state[1]
+        currSelfState = np.array(self.selfState.tolist())
+        ax = currSelfState[0]
+        ay = currSelfState[1]
 
         if(ax < 0.1):
             invax = 1000

@@ -85,12 +85,12 @@ agent1 = None
 agent2 = None
 if port1_type == melee.enums.ControllerType.STANDARD:
     agent1 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, 
-                        logFile = 'agent1_logNew.csv', thetaWeights = np.load('theta.npy'))
+                        logFile = 'agent1_logNew.csv', thetaWeights = np.load('thetaNew.npy'))
     agent1.controller.connect()
     print("Agent1 controller connected.")
 if port2_type == melee.enums.ControllerType.STANDARD:
     agent2 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, 
-                        logFile = 'agent2_logNew.csv', thetaWeights = np.load('theta.npy'))
+                        logFile = 'agent2_logNew.csv', thetaWeights = np.load('thetaNew.npy'))
     agent2.controller.connect()
     print("Agent2 controller connected.")
 
@@ -117,7 +117,7 @@ while True:
     if gamestate.menu_state == melee.enums.Menu.IN_GAME:
         
         if agent1:
-            agent1.act()
+            agent1.jumper()
             agent1.state_action_logger()
         if agent2:
             p = 0
