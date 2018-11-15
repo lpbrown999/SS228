@@ -9,10 +9,6 @@ import configparser
 # custom lib
 from betalib import betaDict
 
-
-#functionHandle = betaDict["3"]
-
-
 parser = argparse.ArgumentParser(description='Batch learning for SS228')
 parser.add_argument('--configfile','-p',default = 'config.ini',
                     help='Specify different config file for different training runs.')
@@ -58,41 +54,42 @@ def get_jumper_reward(curData):
 def global_approx(dfVals, theta, numActions, betaLen):
 
 	[m,n] = np.shape(dfVals)
+	for j in range(0,iterations):
+		print('Iterations Pctg Complete:', round(j/iterations))
+		for i in range(0,m-1):
 
-	for i in range(0,m-1):
-		print(i/m)
+			# calculate reward for jumper
+			data = np.vstack((dfVals[i,:],dfVals[i+1,:]))
+			reward = get_jumper_reward(data)	#Change to reward lib
 
-		# calculate reward for jumper
-		data = np.vstack((dfVals[i,:],dfVals[i+1,:]))
-		reward = get_jumper_reward(data)
+			# extract action from data
+			action = int(dfVals[i,-1])
 
-		# extract action from data
-		action = int(dfVals[i,-1])
+			# caluclate maximum value for dot(theta,beta)
+			term2 = np.zeros(numActions)
+			betaCur = beta(dfVals[i,:])
+			betaNext = beta(dfVals[i+1,:])
+			
+			# find action to maximize 	
+			for maxa in range(0,numActions):
+				term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNext)
 
-		# caluclate maximum value for dot(theta,beta)
-		term2 = np.zeros(numActions)
-		betaCur = beta(dfVals[i,:])
-		betaNext = beta(dfVals[i+1,:])
-		
-		# find action to maximize 	
-		for maxa in range(0,numActions):
-			term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNext)
+			# update spliced theta
+			theta[action*betaLen:(action+1)*betaLen] += alpha*(reward + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
 
-		# update spliced theta
-		theta[action*betaLen:(action+1)*betaLen] += alpha*(reward + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
+			# normalize certain value
+			if(np.linalg.norm(theta) != 0):
+				thetaRatio = ((1e15)*len(theta))/np.linalg.norm(theta)
+			else:
+				thetaRatio = 1
 
-		# normalize certain value
-		if(np.linalg.norm(theta) != 0):
-			thetaRatio = ((1e15)*len(theta))/np.linalg.norm(theta)
-		else:
-			thetaRatio = 1
-
-		theta = theta*(thetaRatio)
+			theta = theta*(thetaRatio)
 
 	return theta
 
 def main():
 
+	#Read from config file
 	inputFileName = config['BatchLearn']['logFile']
 	inputFolderName = config['BatchLearn']['logFolder']
 	inputFolderRootName = config['BatchLearn']['logFolderRoot']
@@ -102,6 +99,8 @@ def main():
 
 	thetaFolderName = config['BatchLearn']['thetaFolder']
 	thetaFolderRootName = config['BatchLearn']['thetaFolderRoot']
+	
+	iterations = config['BatchLearn']['iterations']
 
 	df = pd.read_csv(inputFolderRootName+'/'+inputFolderName+'/'+inputFileName, header=None)
 	dfVals = df.values
@@ -116,10 +115,8 @@ def main():
 		print('Loading previous theta')
 		theta = np.load(thetaFolderRootName+'/'+thetaFolderName+'/'+thetaPriorName)
 
-	# perform global approximation with theta
-	theta = global_approx(dfVals, theta, numActions, betaLen)
-
-	# save theta
+	# perform global approximation with theta, save
+	theta = global_approx(dfVals, theta, numActions, betaLen, iterations)
 	np.save(thetaFolderRootName+'/'+thetaFolderName+'/'+thetaPostName,theta)
 
 if __name__ == '__main__':

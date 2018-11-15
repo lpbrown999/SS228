@@ -6,6 +6,10 @@ import numpy as np
 # Note, all these y's are almost meaningless because it spends most of its time on the ground
 # and then 0**2 = 0 -> no way for it to train these weights. Need to augment these?
 
+# Beta functions need to be chosen to have ACTIVATION at important states -> return high value
+# in states we care about. Currently they are returning 0 when we are in the most critical state (on the ground)
+# Idea: beta = sqrt(10-ay) -> gives high activation when on ground, decays upward. Does better than 1/y
+
 # beta functions relating to our y value and x value
 def jumper_beta_xy_1(stateVal):
 
