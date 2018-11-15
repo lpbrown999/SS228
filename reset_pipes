@@ -1,7 +1,6 @@
 #!/bin/bash
 
-your_id=${USER}
 echo Resetting pipes, memory watcher.
-rm -r '/Users/$your_id/Library/Application Support/Dolphin/Pipes'
-rm -r '/Users/$your_id/Library/Application Support/Dolphin/MemoryWatcher'
+rm -r '/Users/'$USER'/Library/Application Support/Dolphin/Pipes'
+rm -r '/Users/'$USER'/Library/Application Support/Dolphin/MemoryWatcher'
 echo Reset. Need to run smashbot.py to reinitialize these files.
