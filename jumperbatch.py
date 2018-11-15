@@ -24,12 +24,13 @@ def get_jumper_reward(curData):
 	if(curData[1,1] < 0 or curData[0,1] < 0):
 		reward = 0
 	else:
-		reward = max(0 , curData[1,1] - curData[0,1])
+		#reward = max(0 , (curData[1,1] - curData[0,1])**2)
+		reward = (max(0 , curData[0,1]))**2
 
 	if(curData[0,1] < 0.1):
 		reward -= 5
 
-	return reward/1000
+	return reward
 
 # compute beta functions based on state
 def beta(stateVal):
@@ -47,7 +48,8 @@ def beta(stateVal):
 	else:
 		invay = 1/ay
 
-	beta = np.array([ax**2, ay**2, invax, invay])
+	#beta = np.array([ax**2, ay**2, invax, invay])
+	beta = np.array([ay**2,invay])
 
 	return beta
 
