@@ -50,7 +50,7 @@ class SS228agent():
         
         buttonPressVec = np.array(np.unravel_index(actionNumber,self.actionsShape), dtype=np.float)
         buttonPressVec[0:2] = buttonPressVec[0:2]/(self.numStickVals-1)
-        print(buttonPressVec,self.gameState.frame)
+        #print(buttonPressVec,self.gameState.frame)
         
         #Tilt the sticks
         mx = buttonPressVec[0]
@@ -89,23 +89,23 @@ class SS228agent():
             else:
                 self.controller.release_button(item)
         
-    def act(self,mode='random'):
+    def act(self,style='random'):
         
         #If it has been enough frames -> we need a new input
         if self.framesSinceInput >= self.framesBetweenInputs:  
             
             #Maybe a better way to handle this? separate functions?
-            #Choose an action based on the mode!
-            if mode == 'random':
+            #Choose an action based on the style!
+            if style == 'random':
                 actionIdx= random.randrange(0,self.numActions-1)
-            elif mode == 'jumper':
+            elif style == 'jumper':
                 #Greedy
                 betaCurr = self.jumper_beta()
                 bestActionTerms  = np.zeros(self.numActions)
                 for maxa in range(0,self.numActions):
                     bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
                 actionIdx = bestActionTerms.argmax()    #Linear index of the best action
-            elif mode == 'empty':
+            elif style == 'empty':
                 actionIdx = 24
 
             #Execute action, reset counter, record action

@@ -12,20 +12,8 @@ import pandas as pd
 import shutil
 import select
 
-
 # from esagent import ESAgent -> could make Agent 2 this agent.
 from ss228agent import SS228agent
-
-#TODO
-#Logging of ACTIONS
-#Map each posisble state to a state #
-#Map each aciton to an action #
-#Might need to discretize observations
-#Omit things from our observations (who cares about speed etc..)
-
-#Q learning
-#can back propogate our reward to "nearest neighbor states" similar to section 4.5.
-#eligibility traces
 
 def enter_detected():
     # poll stdin with 0 seconds for timeout
@@ -86,12 +74,13 @@ agent2 = None
 if port1Type == melee.enums.ControllerType.STANDARD: #Agent 1 is a bot
     
     agent1 = SS228agent(dolphin = dolphin, gamestate = gamestate, selfPort = 1, opponentPort = 2, 
-                        logFile = config['Agent1']['LogFile'], thetaWeights = np.load(config['Agent1']['ThetaFile']) )
+                        logFile = config['Agent1']['logFile'], thetaWeights = np.load(config['Agent1']['thetaFile']) )
     agent1.controller.connect()
     print("Agent1 controller connected.")
+
 if port2Type == melee.enums.ControllerType.STANDARD:
     agent2 = SS228agent(dolphin = dolphin, gamestate = gamestate, selfPort = 2, opponentPort = 1, 
-                        logFile = config['Agent2']['LogFile'], thetaWeights = np.load(config['Agent2']['ThetaFile']) )
+                        logFile = config['Agent2']['logFile'], thetaWeights = np.load(config['Agent2']['thetaFile']) )
     agent2.controller.connect()
     print("Agent2 controller connected.")
 
@@ -100,7 +89,7 @@ while True:
 
     #Checking for exit request
     if enter_detected():
-        print('Keyboard break detected: cleaning pipes, flusshing empty inputs.')
+        print('Keyboard break detected: cleaning pipes, flushing empty inputs.')
         if agent1:
             agent1.controller.empty_input()
             agent1.controller.flush()
@@ -120,11 +109,10 @@ while True:
     if gamestate.menu_state == melee.enums.Menu.IN_GAME:
         
         if agent1:
-            agent1.act(mode='jumper')
+            agent1.act(style=config['Agent1']['style'])
             agent1.state_action_logger()
         if agent2:
-            agent2.act(mode='empty')
-            #agent2.act()
+            agent2.act(style=config['Agent2']['style'])
             #agent2.state_action_logger()
 
     #If we're at the character select screen, choose our character
