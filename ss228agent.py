@@ -56,6 +56,7 @@ class SS228agent():
         
         # obtain button press vector from our action number
         buttonPressVec = self.action_to_controller(actionNumber)
+
         
         #Tilt the sticks
         mx = buttonPressVec[1]
@@ -120,6 +121,12 @@ class SS228agent():
                     actionIdx = bestActionTerms.argmax()    #Linear index of the best action
                     print('greedy', actionIdx)
             
+            elif self.style == "forcejump":
+
+            	jump = np.array([0, 0.5, 0.5])
+            	actionIdx = self.controller_to_action(jump)
+
+
             elif self.style == 'empty':
                 actionIdx = 49
 
