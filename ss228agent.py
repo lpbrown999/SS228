@@ -1,9 +1,12 @@
+# standard lib
 import melee
 from melee.enums import Action, Button
 import random
-
 import numpy as np
 import pandas as pd
+
+# custom lib
+from beta import *
 
 class SS228agent():
     def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, thetaWeights):
@@ -38,7 +41,7 @@ class SS228agent():
 
         #Information for global Q learning
         self.thetaWeights = thetaWeights
-        self.betaLen = len(self.jumper_beta())
+        self.betaLen = len(jumper_beta(np.array(self.selfState.tolist())))
 
     def simple_button_press(self, actionNumber):
         #Take in an action number, unravel it to the action vector
@@ -99,7 +102,7 @@ class SS228agent():
                 actionIdx= random.randrange(0,self.numActions-1)
             elif style == 'jumper':
                 #Greedy
-                betaCurr = self.jumper_beta()
+                betaCurr = jumper_beta(np.array(self.selfState.tolist()))
                 bestActionTerms  = np.zeros(self.numActions)
                 for maxa in range(0,self.numActions):
                     bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
@@ -119,7 +122,7 @@ class SS228agent():
 
         else:
             self.framesSinceInput += 1
-
+    """
     def jumper_beta(self):
         currSelfState = np.array(self.selfState.tolist())
         ax = currSelfState[0]
@@ -137,6 +140,7 @@ class SS228agent():
 
         beta = np.array([ax**2, ay**2, invax, invay])
         return beta
+    """
 
     def state_action_logger(self):
         combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
