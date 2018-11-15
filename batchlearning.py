@@ -42,12 +42,15 @@ def get_jumper_reward(curData):
 		reward = 0
 	else:
 		#reward = max(0 , (curData[1,1] - curData[0,1])**2)
-		reward = (max(0 , y))**2
+		reward = (max(0 , y))**2 + 5 
 
-	# penalty
+	# penalty -> added inherent value to not being on ground
 	if(y < 0.1):
 		reward -= 5
+	else:
+		reward += 5
 
+	#Penalty for being far from center stage
 	reward += -abs(x)
 
 	return reward
@@ -57,7 +60,7 @@ def global_approx(dfVals, theta, numActions, betaLen):
 	[m,n] = np.shape(dfVals)
 
 	for i in range(0,m-1):
-		#print(i)
+		print(i/m)
 
 		# calculate reward for jumper
 		data = np.vstack((dfVals[i,:],dfVals[i+1,:]))

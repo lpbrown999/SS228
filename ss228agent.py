@@ -5,6 +5,7 @@ import random
 import numpy as np
 import pandas as pd
 
+import random
 # custom lib
 # from betalib import betaDict
 
@@ -22,9 +23,9 @@ class SS228agent():
         self.controller = melee.controller.Controller(port=selfPort, dolphin=dolphin) 
         self.framedata = melee.framedata.FrameData()
 
-        #Playstyle
+        #Playstyle, beta function
         self.style = style
-        self.beta = beta
+        self.beta = beta 
 
         #Information for inputs
         self.framesBetweenInputs = 12
@@ -56,11 +57,11 @@ class SS228agent():
         
         # obtain button press vector from our action number
         buttonPressVec = self.action_to_controller(actionNumber)
+        print(buttonPressVec)
         
         #Tilt the sticks
         mx = buttonPressVec[0]
         my = buttonPressVec[1]    
-        print(mx,my)
         self.controller.tilt_analog(Button.BUTTON_MAIN, mx, my)
         self.controller.tilt_analog(Button.BUTTON_C,  .5, .5)
 
@@ -108,14 +109,18 @@ class SS228agent():
                 actionIdx= random.randrange(0,self.numActions-1)
             
             elif self.style == 'jumper':
-                #Greedy
-                betaCurr = self.beta(np.array(self.selfState.tolist()))
-                bestActionTerms  = np.zeros(self.numActions)
-                for maxa in range(0,self.numActions):
-                    bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
-               
-                actionIdx = bestActionTerms.argmax()    #Linear index of the best action
-                print(actionIdx)                
+                #Eps Greedy
+                if random.random() < .1:
+                    actionIdx= random.randrange(0,self.numActions-1)
+                else:
+                    betaCurr = self.beta(np.array(self.selfState.tolist()))
+                    bestActionTerms  = np.zeros(self.numActions)
+                    for maxa in range(0,self.numActions):
+                        bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
+                    print(bestActionTerms)
+                    actionIdx = bestActionTerms.argmax()    #Linear index of the best action
+                    print(actionIdx)                
+                    print(bestActionTerms[actionIdx])
 
             elif self.style == 'empty':
                 actionIdx = 24

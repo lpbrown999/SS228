@@ -3,6 +3,8 @@ import select
 import pandas as pd
 import numpy as np
 
+# Note, all these y's are almost meaningless because it spends most of its time on the ground
+# and then 0**2 = 0 -> no way for it to train these weights. Need to augment these?
 
 # beta functions relating to our y value and x value
 def jumper_beta_xy_1(stateVal):
@@ -65,6 +67,16 @@ def jumper_beta_xy_2(stateVal):
 	
 	return beta
 
+def jumper_beta_xy_3(stateVal):
+
+	ax = stateVal[0]
+	ay = stateVal[1]
+
+	# set basis functions
+	beta = np.array([ay, ay**2, ay**3, ax, ax**2, ax**3, ax*ay, ax*(ay**2), ay*(ax**2) ])
+	
+	return beta
+
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -73,7 +85,8 @@ def jumper_beta_xy_2(stateVal):
 
 betaDict = {"1": jumper_beta_xy_1,
 			"2": jumper_beta_y,
-			"3": jumper_beta_xy_2}
+			"3": jumper_beta_xy_2,
+			"4": jumper_beta_xy_3}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
