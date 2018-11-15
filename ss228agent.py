@@ -48,9 +48,8 @@ class SS228agent():
         if not self.controller.pipe:
             return
         
-        buttonPressVec = np.array(np.unravel_index(actionNumber,self.actionsShape), dtype=np.float)
-        buttonPressVec[0:2] = buttonPressVec[0:2]/(self.numStickVals-1)
-        #print(buttonPressVec,self.gameState.frame)
+        # obtain button press vector from our action number
+        buttonPressVec = self.action_to_controller(actionNumber)
         
         #Tilt the sticks
         mx = buttonPressVec[0]
@@ -152,7 +151,28 @@ class SS228agent():
         else:
             self.logArray = np.vstack((self.logArray, combined_state_action))
 
+    # obtain controller inputs given action number
+    def action_to_controller(self,actionNumber):
 
+        # unravel action number based on action shape array
+        buttonPressVec = np.array(np.unravel_index(actionNumber,self.actionsShape), dtype=np.float)
+
+        # obtain analog stick values
+        buttonPressVec[0:2] = buttonPressVec[0:2]/(self.numStickVals-1)
+
+        return buttonPressVec
+
+    # obtain action value from controller input
+    def controller_to_action(self, buttonPressVec):
+
+        # obtain analog stick action number
+        buttonPressVec[0:2] = buttonPressVec[0:2]*(self.numStickVals-1)
+
+        # ravel button press vector back to action number
+        actionNumber = np.ravel_multi_index(buttonPressVec.astype(int),self.actionsShape)
+
+        return actionNumber
+        
 
 
 
