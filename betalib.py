@@ -43,7 +43,7 @@ def jumper_beta_y(stateVal):
 
 	return beta
 
-def beta_jumper_xy_2(stateVal):
+def jumper_beta_xy_2(stateVal):
 
 	ax = stateVal[0]
 	ay = stateVal[1]
@@ -71,9 +71,9 @@ def beta_jumper_xy_2(stateVal):
 # Remeber to update this dictionary when adding a new beta function #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-betaDict = {"1":jumper_beta_xy_1,
+betaDict = {"1": jumper_beta_xy_1,
 			"2": jumper_beta_y,
-			"3": beta_jumper_xy_2}
+			"3": jumper_beta_xy_2}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
