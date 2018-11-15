@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import argparse
+import configparser
 import os
 import signal
 import sys
@@ -10,6 +11,7 @@ import pandas as pd
 
 import shutil
 import select
+
 
 # from esagent import ESAgent -> could make Agent 2 this agent.
 from ss228agent import SS228agent
@@ -40,37 +42,35 @@ def check_port(value):
          Must be 1, 2, 3, or 4." % value)
     return ivalue
 
-#Rethink how we start up the script. I.e.:
-#python smashbot.py -1 'Human' -2 'AI'
+#Argument, config file parsing.
 parser = argparse.ArgumentParser(description='Example of libmelee in action')
 parser.add_argument('--mode','-m',type=int,default = 1,
                     help='Different Modes:\n \
                     1 - Human on Port 1, AI on Port 2. \n \
                     2 - AI on Port 1 and AI on Port 2. \n \
                     3 - Can be added for future use.')
-parser.add_argument('--logging','-l', action='store_true',
-                    help='Logging of Gamestates')
+parser.add_argument('--configfile','-p',default = 'config.ini',
+                    help='Specify different config file for different bot runs.')
 args = parser.parse_args()
 
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 #Setup the ports based on what mode we selected
-#   Options here are:
-#   GCN_ADAPTER will use your WiiU adapter for live human-controlled play
-#   UNPLUGGED is pretty obvious what it means
-#   STANDARD is a named pipe input (bot)
 if args.mode == 1:    #Human vs AI
-    port1_type = melee.enums.ControllerType.GCN_ADAPTER #Human
-    port2_type = melee.enums.ControllerType.STANDARD    #Bot
+    port1Type = melee.enums.ControllerType.GCN_ADAPTER #Human
+    port2Type = melee.enums.ControllerType.STANDARD    #Bot
 elif args.mode == 2:    #AI vs AI
-    port1_type = melee.enums.ControllerType.STANDARD
-    port2_type = melee.enums.ControllerType.STANDARD
+    port1Type = melee.enums.ControllerType.STANDARD
+    port2Type = melee.enums.ControllerType.STANDARD
 else:
-    print("Exiting, mode set to 0 which is improper usage")
+    print("Exiting, mode not defined.")
     sys.exit()
 
 #Create our Dolphin object. This will be the primary object that we will interface with. 
 dolphin = melee.dolphin.Dolphin(ai_port=2,
                                 opponent_port=1,
-                                opponent_type=port1_type,
+                                opponent_type=port1Type,
                                 logger=None)
 gamestate = melee.gamestate.GameState(dolphin)
 def signal_handler(signal, frame):
@@ -80,23 +80,25 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 print("Dolphing connected.")
 
-#Initialize all the agents that we have designated are bots by the port type, and connect the controllers
+#Initialize agents
 agent1 = None
 agent2 = None
-if port1_type == melee.enums.ControllerType.STANDARD:
-    agent1 = SS228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, 
-                        logFile = 'agent1_logNew.csv', thetaWeights = np.load('thetaNew.npy'))
+if port1Type == melee.enums.ControllerType.STANDARD: #Agent 1 is a bot
+    
+    agent1 = SS228agent(dolphin = dolphin, gamestate = gamestate, selfPort = 1, opponentPort = 2, 
+                        logFile = config['Agent1']['LogFile'], thetaWeights = np.load(config['Agent1']['ThetaFile']) )
     agent1.controller.connect()
     print("Agent1 controller connected.")
-if port2_type == melee.enums.ControllerType.STANDARD:
-    agent2 = SS228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, 
-                        logFile = 'agent2_logNew.csv', thetaWeights = np.load('thetaNew.npy'))
+if port2Type == melee.enums.ControllerType.STANDARD:
+    agent2 = SS228agent(dolphin = dolphin, gamestate = gamestate, selfPort = 2, opponentPort = 1, 
+                        logFile = config['Agent2']['LogFile'], thetaWeights = np.load(config['Agent2']['ThetaFile']) )
     agent2.controller.connect()
     print("Agent2 controller connected.")
 
 #Main loop
 while True:
-    #print(gamestate.frame)
+
+    #Checking for exit request
     if enter_detected():
         print('Keyboard break detected: cleaning pipes, flusshing empty inputs.')
         if agent1:
@@ -109,18 +111,19 @@ while True:
         dolphin.terminate()
         sys.exit(0)
 
+    #Step to next frame
     gamestate.step()
     if(gamestate.processingtime * 1000 > 12):
         print("WARNING: Last frame took " + str(gamestate.processingtime*1000) + "ms to process.")
 
-    #In game -> act
+    #In Game -> act
     if gamestate.menu_state == melee.enums.Menu.IN_GAME:
         
         if agent1:
-            agent1.jumper()
+            agent1.act(mode='jumper')
             agent1.state_action_logger()
         if agent2:
-            p = 0
+            agent2.act(mode='empty')
             #agent2.act()
             #agent2.state_action_logger()
 
@@ -153,7 +156,6 @@ while True:
     #If we're at the stage select screen, choose a stage
     elif gamestate.menu_state == melee.enums.Menu.STAGE_SELECT:
     	#FINAL_DESTINATION
-    	#BATTLEFIELD
         if agent1 and agent2:
             melee.menuhelper.choosestage(stage=melee.enums.Stage.FINAL_DESTINATION,
                             gamestate=gamestate,

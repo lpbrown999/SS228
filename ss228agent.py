@@ -6,37 +6,33 @@ import numpy as np
 import pandas as pd
 
 class SS228agent():
-    def __init__(self, dolphin, gamestate, self_port, opponent_port, logFile, thetaWeights):
+    def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, thetaWeights):
         
         #Self info about game state
         self.gameState = gamestate
-        self.selfState = self.gameState.player[self_port]
-        self.oppState  = self.gameState.player[opponent_port]
+        self.selfState = self.gameState.player[selfPort]
+        self.oppState  = self.gameState.player[opponentPort]
         self.logFile = logFile
-        self.log_array = np.array([])
+        self.logArray = np.array([])
 
-        #Self info about ports
-        self.self_port = self_port
-        self.opp_port = opponent_port
-
-        self.controller = melee.controller.Controller(port=self_port, dolphin=dolphin) 
+        self.controller = melee.controller.Controller(port=selfPort, dolphin=dolphin) 
         self.framedata = melee.framedata.FrameData()
 
         #Buttons to skip when pressing buttons
         self.buttonSkipList = [Button.BUTTON_MAIN, Button.BUTTON_C, Button.BUTTON_R]
 
         #Information for reduced inputs
-        self.frames_between_inputs = 12
-        self.frames_since_last_input = 12
-        self.frames_between_csv_output = 300
+        self.framesBetweenInputs = 12
+        self.framesSinceInput = 12
+        self.framesBetweenCsvLog = 300
         self.lastAction = 0
 
         #Define values for sticks,buttons
-        self.stickvals = np.linspace(0,1,3)
-        self.buttonvals = [0,1]
+        self.stickVals = np.linspace(0,1,3)
+        self.buttonVals = [0,1]
 
         #Shape of ndarray of action matrix that we use to map linear indexes of actions to
-        self.numStickVals = len(self.stickvals)
+        self.numStickVals = len(self.stickVals)
         self.actionsShape = (self.numStickVals,self.numStickVals,6)
         self.numActions = np.prod(self.actionsShape)
 
@@ -55,17 +51,15 @@ class SS228agent():
         buttonPressVec = np.array(np.unravel_index(actionNumber,self.actionsShape), dtype=np.float)
         buttonPressVec[0:2] = buttonPressVec[0:2]/(self.numStickVals-1)
         print(buttonPressVec,self.gameState.frame)
-
+        
+        #Tilt the sticks
         mx = buttonPressVec[0]
         my = buttonPressVec[1]    
-
-
-        #Tilt the sticks
         self.controller.tilt_analog(Button.BUTTON_MAIN, mx, my)
         self.controller.tilt_analog(Button.BUTTON_C,  .5, .5)
 
         #If statements to handle the abxLz or nothing to press
-        #print(self.frames_since_last_input,self.frames_between_inputs,buttonPressVec[2])
+        #print(self.framesSinceInput,self.framesBetweenInputs,buttonPressVec[2])
 
         skipList = self.buttonSkipList.copy()
         if buttonPressVec[2] == 5:
@@ -95,49 +89,37 @@ class SS228agent():
             else:
                 self.controller.release_button(item)
         
-    def act(self):
+    def act(self,mode='random'):
         
         #If it has been enough frames -> we need a new input
-        if self.frames_since_last_input >= self.frames_between_inputs:  
-        
-            #Linear index of action
-            actionIdx= random.randrange(0,self.numActions-1)
-            self.simple_button_press(actionIdx)
-
-            #Reset counter, recored the last action taken
-            self.frames_since_last_input = 0
-            self.lastAction = actionIdx
-
-        else:
-            self.frames_since_last_input += 1
-    
-    def jumper(self):        
-
-        #If it has been enough frames -> we need a new input
-        if self.frames_since_last_input >= self.frames_between_inputs:  
+        if self.framesSinceInput >= self.framesBetweenInputs:  
             
-   
-            #Greedy
-            betaCurr = self.jumper_beta()
-            bestActionTerms  = np.zeros(self.numActions)
-            for maxa in range(0,self.numActions):
-                bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
+            #Maybe a better way to handle this? separate functions?
+            #Choose an action based on the mode!
+            if mode == 'random':
+                actionIdx= random.randrange(0,self.numActions-1)
+            elif mode == 'jumper':
+                #Greedy
+                betaCurr = self.jumper_beta()
+                bestActionTerms  = np.zeros(self.numActions)
+                for maxa in range(0,self.numActions):
+                    bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
+                actionIdx = bestActionTerms.argmax()    #Linear index of the best action
+            elif mode == 'empty':
+                actionIdx = 24
 
-            #Linear index of the best action
-            actionIdx = bestActionTerms.argmax()
+            #Execute action, reset counter, record action
             self.simple_button_press(actionIdx)
-
-            #Reset counter, recored the last action taken
-            self.frames_since_last_input = 0
+            self.framesSinceInput = 0
             self.lastAction = actionIdx
         
         #Send an empty input on the frame before we do another input
-        elif (self.frames_since_last_input == self.frames_between_inputs - 1):
+        elif (self.framesSinceInput == self.framesBetweenInputs - 1):
             self.simple_button_press(24)
-            self.frames_since_last_input += 1
+            self.framesSinceInput += 1
 
         else:
-            self.frames_since_last_input += 1
+            self.framesSinceInput += 1
 
     def jumper_beta(self):
         currSelfState = np.array(self.selfState.tolist())
@@ -161,14 +143,14 @@ class SS228agent():
         combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
         
         #Log the array
-        if np.size(self.log_array,axis=0) == self.frames_between_csv_output:
-            df = pd.DataFrame(self.log_array)
+        if np.size(self.logArray,axis=0) == self.framesBetweenCsvLog:
+            df = pd.DataFrame(self.logArray)
             df.to_csv(self.logFile, mode='a', header=False, index = False)
-            self.log_array = combined_state_action
-        elif np.size(self.log_array) == 0:
-            self.log_array = combined_state_action
+            self.logArray = combined_state_action
+        elif np.size(self.logArray) == 0:
+            self.logArray = combined_state_action
         else:
-            self.log_array = np.vstack((self.log_array, combined_state_action))
+            self.logArray = np.vstack((self.logArray, combined_state_action))
 
 
 
