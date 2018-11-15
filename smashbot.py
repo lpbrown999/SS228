@@ -26,7 +26,6 @@ from aa228agent import AA228agent
 #eligibility traces
 
 def enter_detected():
-
     # poll stdin with 0 seconds for timeout
     i,o,e = select.select([sys.stdin],[],[],0)
     if(i):
@@ -85,17 +84,19 @@ print("Dolphing connected.")
 agent1 = None
 agent2 = None
 if port1_type == melee.enums.ControllerType.STANDARD:
-    agent1 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, log_file = 'agent1_log.csv')
+    agent1 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, 
+                        logFile = 'agent1_logNew.csv', thetaWeights = np.load('theta.npy'))
     agent1.controller.connect()
     print("Agent1 controller connected.")
 if port2_type == melee.enums.ControllerType.STANDARD:
-    agent2 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, log_file = 'agent2_log.csv')
+    agent2 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, 
+                        logFile = 'agent2_logNew.csv', thetaWeights = np.load('theta.npy'))
     agent2.controller.connect()
     print("Agent2 controller connected.")
 
 #Main loop
 while True:
-
+    #print(gamestate.frame)
     if enter_detected():
         print('Keyboard break detected: cleaning pipes, flusshing empty inputs.')
         if agent1:
@@ -108,25 +109,20 @@ while True:
         dolphin.terminate()
         sys.exit(0)
 
-    #"step" to the next frame -> Game operates at 60hz (16ms per frame), warn if going too slow
     gamestate.step()
     if(gamestate.processingtime * 1000 > 12):
         print("WARNING: Last frame took " + str(gamestate.processingtime*1000) + "ms to process.")
-    
-
-
-
-
 
     #In game -> act
     if gamestate.menu_state == melee.enums.Menu.IN_GAME:
         
         if agent1:
             agent1.act()
-            #agent1.state_action_logger()
+            agent1.state_action_logger()
         if agent2:
-            agent2.act()
-            agent2.state_action_logger()
+            p = 0
+            #agent2.act()
+            #agent2.state_action_logger()
 
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:
