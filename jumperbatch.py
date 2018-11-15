@@ -19,16 +19,21 @@ def get_jumper_reward(curData):
 	# obtain states for agent 1 and agent 2
 	# x,y,%,stocks,self.facing,self.action.value, self.action.frame, invulnerable, hitlag frames . . .
 	# hitstunframes, charging smash, jumps left, on ground, x speed, y speed, off stage
-	
+	x = curData[0,0]
+	y = curData[0,1]
+
 	# difference between next frame and current frame, clamped at 0
-	if(curData[1,1] < 0 or curData[0,1] < 0):
+	if(y < 0):
 		reward = 0
 	else:
 		#reward = max(0 , (curData[1,1] - curData[0,1])**2)
-		reward = (max(0 , curData[0,1]))**2
+		reward = (max(0 , y))**2
 
-	if(curData[0,1] < 0.1):
+	# penalty
+	if(y < 0.1):
 		reward -= 5
+
+	reward += -abs(x)
 
 	return reward
 
@@ -48,8 +53,8 @@ def beta(stateVal):
 	else:
 		invay = 1/ay
 
-	#beta = np.array([ax**2, ay**2, invax, invay])
-	beta = np.array([ay**2,invay])
+	beta = np.array([ax**2, ay**2, invax, invay])
+	#beta = np.array([ay**2,invay])
 
 	return beta
 
@@ -89,6 +94,17 @@ def global_approx(dfVals, theta, numActions, betaLen):
 
 	return theta
 
+# return theta splice associated with certain action
+def get_theta_a(theta,action,betaLen):
+	return theta[action*betaLen:(action+1)*betaLen]
+
+# obtain controller inputs given action number
+def action_to_controller(actionNum,actionShape):
+	p = 0
+
+# obtain action value from controller input
+def controller_to_action(controllerArray):
+	p = 0
 
 def main():
 
