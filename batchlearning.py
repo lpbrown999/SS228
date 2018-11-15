@@ -4,17 +4,24 @@ import pandas as pd
 import numpy as np
 
 # custom lib
-from aa228agent import *
 
+import argparse
+import configparser
+
+parser = argparse.ArgumentParser(description='Batch learning for SS228')
+parser.add_argument('--configfile','-p',default = 'config.ini',
+                    help='Specify different config file for different training runs.')
+args = parser.parse_args()
+
+config = configparser.ConfigParser()
+config.read(args.configfile)
 
 # global variables
-numActions = 54
-
-alpha = 0.05
-gamma = 0.95
+numActions = int(config['BatchLearn']['numActions'])
+alpha = float(config['BatchLearn']['alpha'])
+gamma = float(config['BatchLearn']['gamma'])
 
 def get_jumper_reward(curData):
-
 
 	# obtain states for agent 1 and agent 2
 	# x,y,%,stocks,self.facing,self.action.value, self.action.frame, invulnerable, hitlag frames . . .
@@ -65,7 +72,6 @@ def global_approx(dfVals, theta, numActions, betaLen):
 	for i in range(0,m-1):
 		print(i)
 
-
 		# calculate reward for jumper
 		data = np.vstack((dfVals[i,:],dfVals[i+1,:]))
 		reward = get_jumper_reward(data)
@@ -94,45 +100,34 @@ def global_approx(dfVals, theta, numActions, betaLen):
 
 	return theta
 
-# return theta splice associated with certain action
-def get_theta_a(theta,action,betaLen):
-	return theta[action*betaLen:(action+1)*betaLen]
-
-# obtain controller inputs given action number
-def action_to_controller(actionNum,actionShape):
-	p = 0
-
-# obtain action value from controller input
-def controller_to_action(controllerArray):
-	p = 0
-
 def main():
 
-	if len(sys.argv) < 2:
-		raise Exception("usage: python3 jumperbatch.py <infile>.csv <thetasave>.npy <thetaread>.npy")
+	inputFileName = config['BatchLearn']['logFile']
+	inputFolderName = config['BatchLearn']['logFolder']
+	inputFolderRootName = config['BatchLearn']['logFolderRoot']
 
-	# extract data
-	inputfilename = sys.argv[1]
-	df = pd.read_csv(inputfilename, header=None)
+	thetaPriorName = config['BatchLearn']['thetaPrior']
+	thetaPostName = config['BatchLearn']['thetaOutput']
+
+	thetaFolderName = config['BatchLearn']['thetaFolder']
+	thetaFolderRootName = config['BatchLearn']['thetaFolderRoot']
+
+	df = pd.read_csv(inputFolderRootName+'/'+inputFolderName+'/'+inputFileName, header=None)
 	dfVals = df.values
 
-	# obtain beta length
-	betaLen = len(beta(dfVals[0,:]))
+	betaLen = len(beta(dfVals[0,:])) 	# obtain beta length
 
 	# create new theta or grab from previous theta
-	if(len(sys.argv) == 4):
-		theta = np.load(sys.argv[3])
-	else:
+	if config['BatchLearn']['thetaPrior'] == 'none':
 		theta = np.zeros(numActions*betaLen)
+	else:
+		theta = np.load(thetaFolderRootName+'/'+thetaFolderName+'/'+thetaPriorName)
 
 	# perform global approximation with theta
 	theta = global_approx(dfVals, theta, numActions, betaLen)
 
 	# save theta
-	if(len(sys.argv) == 3):
-		np.save(sys.argv[2],theta)
-	
-
+	np.save(thetaFolderRootName+'/'+thetaFolderName+'/'+thetaPostName,theta)
 
 if __name__ == '__main__':
 	main()

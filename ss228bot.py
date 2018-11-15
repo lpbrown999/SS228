@@ -32,27 +32,33 @@ def check_port(value):
 
 #Argument, config file parsing.
 parser = argparse.ArgumentParser(description='Example of libmelee in action')
-parser.add_argument('--mode','-m',type=int,default = 1,
-                    help='Different Modes:\n \
-                    1 - Human on Port 1, AI on Port 2. \n \
-                    2 - AI on Port 1 and AI on Port 2. \n \
-                    3 - Can be added for future use.')
+# parser.add_argument('--mode','-m',type=int,default = 1,
+#                     help='Different Modes:\n \
+#                     1 - Human on Port 1, AI on Port 2. \n \
+#                     2 - AI on Port 1 and AI on Port 2. \n \
+#                     3 - Can be added for future use.')
 parser.add_argument('--configfile','-p',default = 'config.ini',
                     help='Specify different config file for different bot runs.')
 args = parser.parse_args()
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(args.configfile)
 
-#Setup the ports based on what mode we selected
-if args.mode == 1:    #Human vs AI
-    port1Type = melee.enums.ControllerType.GCN_ADAPTER #Human
-    port2Type = melee.enums.ControllerType.STANDARD    #Bot
-elif args.mode == 2:    #AI vs AI
-    port1Type = melee.enums.ControllerType.STANDARD
-    port2Type = melee.enums.ControllerType.STANDARD
+#Set up the ports based on the mode
+if config['Agent1']['actor'] == 'AI'
+    port1Type = melee.enums.ControllerType.STANDARD    #Bot
+elif config['Agent1']['actor'] == 'Human'
+    port1Type = melee.enums.ControllerType.GCN_ADAPTER
 else:
-    print("Exiting, mode not defined.")
+    print("Exiting, actor not defined.")
+    sys.exit()
+
+if config['Agent2']['actor'] == 'AI'
+    port2Type = melee.enums.ControllerType.STANDARD    #Bot
+elif config['Agent2']['actor'] == 'Human'
+    port2Type = melee.enums.ControllerType.GCN_ADAPTER
+else:
+    print("Exiting, actor not defined.")
     sys.exit()
 
 #Create our Dolphin object. This will be the primary object that we will interface with. 
