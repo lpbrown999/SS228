@@ -12,7 +12,7 @@ import shutil
 import select
 
 # from esagent import ESAgent -> could make Agent 2 this agent.
-from aa228agent import AA228agent
+from ss228agent import SS228agent
 
 #TODO
 #Logging of ACTIONS
@@ -84,12 +84,12 @@ print("Dolphing connected.")
 agent1 = None
 agent2 = None
 if port1_type == melee.enums.ControllerType.STANDARD:
-    agent1 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, 
+    agent1 = SS228agent(dolphin = dolphin, gamestate = gamestate, self_port = 1, opponent_port = 2, 
                         logFile = 'agent1_logNew.csv', thetaWeights = np.load('thetaNew.npy'))
     agent1.controller.connect()
     print("Agent1 controller connected.")
 if port2_type == melee.enums.ControllerType.STANDARD:
-    agent2 = AA228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, 
+    agent2 = SS228agent(dolphin = dolphin, gamestate = gamestate, self_port = 2, opponent_port = 1, 
                         logFile = 'agent2_logNew.csv', thetaWeights = np.load('thetaNew.npy'))
     agent2.controller.connect()
     print("Agent2 controller connected.")

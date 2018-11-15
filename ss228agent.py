@@ -5,10 +5,7 @@ import random
 import numpy as np
 import pandas as pd
 
-"""
-Testing the potential for random actions
-"""
-class AA228agent():
+class SS228agent():
     def __init__(self, dolphin, gamestate, self_port, opponent_port, logFile, thetaWeights):
         
         #Self info about game state
