@@ -111,13 +111,15 @@ class SS228agent():
                 #Eps Greedy
                 if random.random() < .1:
                     actionIdx= random.randrange(0,self.numActions-1)
+                    print('random', actionIdx)
                 else:
                     betaCurr = self.beta(np.array(self.selfState.tolist()))
                     bestActionTerms  = np.zeros(self.numActions)
                     for maxa in range(0,self.numActions):
                         bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
                     actionIdx = bestActionTerms.argmax()    #Linear index of the best action
-
+                    print('greedy', actionIdx)
+            
             elif self.style == 'empty':
                 actionIdx = 49
 

@@ -8,6 +8,7 @@ import configparser
 
 # custom lib
 from betalib import betaDict
+from rewardlib import rewardDict
 
 parser = argparse.ArgumentParser(description='Batch learning for SS228')
 parser.add_argument('--configfile','-p',default = 'config.ini',
@@ -23,61 +24,35 @@ alpha = float(config['BatchLearn']['alpha'])
 gamma = float(config['BatchLearn']['gamma'])
 
 beta = betaDict[config['BatchLearn']['beta_function']]
+reward = rewardDict[config['BatchLearn']['reward_function']]
 
-
-def get_jumper_reward(curData):
-
-	# obtain states for agent 1 and agent 2
-	# x,y,%,stocks,self.facing,self.action.value, self.action.frame, invulnerable, hitlag frames . . .
-	# hitstunframes, charging smash, jumps left, on ground, x speed, y speed, off stage
-	x = curData[0,0]
-	y = curData[0,1]
-
-	# difference between next frame and current frame, clamped at 0
-	if(y < 0):
-		reward = 0
-	else:
-		#reward = max(0 , (curData[1,1] - curData[0,1])**2)
-		reward = (max(0 , y))**2 + 5 
-
-	# penalty -> added inherent value to not being on ground
-	if(y < 0.1):
-		reward -= 5
-	else:
-		reward += 5
-
-	#Penalty for being far from center stage
-	reward += -abs(x)
-
-	return reward
-
-def global_approx(dfVals, theta, numActions, betaLen):
+def global_approx(dfVals, theta, numActions, betaLen, iterations):
 
 	[m,n] = np.shape(dfVals)
 	for j in range(0,iterations):
-		print('Iterations Pctg Complete:', round(j/iterations))
+		print('Iterations Pctg Complete:', round(j/iterations,3))
 		for i in range(0,m-1):
 
-			# calculate reward for jumper
-			data = np.vstack((dfVals[i,:],dfVals[i+1,:]))
-			reward = get_jumper_reward(data)	#Change to reward lib
-
-			# extract action from data
-			action = int(dfVals[i,-1])
-
-			# caluclate maximum value for dot(theta,beta)
-			term2 = np.zeros(numActions)
-			betaCur = beta(dfVals[i,:])
-			betaNext = beta(dfVals[i+1,:])
+			#State S and Sp
+			s_sp = np.vstack((dfVals[i,:],dfVals[i+1,:]))
 			
-			# find action to maximize 	
+			# Action taken at state s, reward from states and sp
+			r = reward(s_sp)	#Change to reward lib
+			action = int(s_sp[0,-1])
+
+			# Basis functions evaluated at s, sp
+			betaCur = beta(s_sp[0,:])
+			betaNext = beta(s_sp[1,:])
+			
+			# Maximization term
+			term2 = np.zeros(numActions)
 			for maxa in range(0,numActions):
 				term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNext)
 
-			# update spliced theta
-			theta[action*betaLen:(action+1)*betaLen] += alpha*(reward + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
+			#Update
+			theta[action*betaLen:(action+1)*betaLen] += alpha*(r + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
 
-			# normalize certain value
+			#Normalize theta to keep bounded since theta abs can diverge
 			if(np.linalg.norm(theta) != 0):
 				thetaRatio = ((1e15)*len(theta))/np.linalg.norm(theta)
 			else:
@@ -100,7 +75,7 @@ def main():
 	thetaFolderName = config['BatchLearn']['thetaFolder']
 	thetaFolderRootName = config['BatchLearn']['thetaFolderRoot']
 	
-	iterations = config['BatchLearn']['iterations']
+	iterations = int(config['BatchLearn']['iterations'])
 
 	df = pd.read_csv(inputFolderRootName+'/'+inputFolderName+'/'+inputFileName, header=None)
 	dfVals = df.values

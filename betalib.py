@@ -35,7 +35,6 @@ def jumper_beta_xy_1(stateVal):
 
 # beta functions relating to our y value
 def jumper_beta_y(stateVal):
-
 	ay = stateVal[1]
 
 	# cap inverse of y
@@ -71,13 +70,14 @@ def jumper_beta_xy_2(stateVal):
 	
 	return beta
 
-def jumper_beta_xy_3(stateVal):
+def jumper_beta_new(stateVal):
+	#Curdata
+	# obtain states for agent 1 and agent 2
+	# x,y,%,stocks,self.facing,self.action.value, self.action.frame, invulnerable, hitlag frames . . .
+	# hitstunframes, charging smash, jumps left, on ground, x speed, y speed, off stage
 
-	ax = stateVal[0]
 	ay = stateVal[1]
-
-	# set basis functions
-	beta = np.array([ay, ay**2, ay**3, ax, ax**2, ax**3, ax*ay, ax*(ay**2), ay*(ax**2) ])
+	beta = np.array([1, ay, np.sign(ay)*(ay**2), np.sqrt(max(0,5-ay))])
 	
 	return beta
 
@@ -90,7 +90,7 @@ def jumper_beta_xy_3(stateVal):
 betaDict = {"1": jumper_beta_xy_1,
 			"2": jumper_beta_y,
 			"3": jumper_beta_xy_2,
-			"4": jumper_beta_xy_3}
+			"4": jumper_beta_new}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #

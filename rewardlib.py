@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 
 
-def jumper_reward(curData):
-
+def jumper_reward_old(curData):
+	#Curdata
 	# obtain states for agent 1 and agent 2
 	# x,y,%,stocks,self.facing,self.action.value, self.action.frame, invulnerable, hitlag frames . . .
 	# hitstunframes, charging smash, jumps left, on ground, x speed, y speed, off stage
@@ -28,13 +28,32 @@ def jumper_reward(curData):
 
 	return reward
 
+def jumper_reward(curData):
+	
+	reward = 0
 
+	s = curData[0,:]
+	sp = curData[1,:]
+
+	#On the ground in state s, sp. 1 if on ground and actually on stage, not on platform
+	onground_s  = int(s[12] and s[1]<1)
+	onground_sp = int(sp[12] and sp[1]<1)
+
+	if (onground_s == 1) and (onground_sp == 0): #We left the ground
+		reward += 10
+	elif (onground_s == 1) and (onground_sp == 1): #we failed to leave the ground
+		reward -= 1
+	else:											#we were not on the ground
+		reward += 0
+
+	return(reward)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-rewardDict = {"1": jumper_reward}
+rewardDict = {"1": jumper_reward_old,
+			  "2": jumper_reward}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
