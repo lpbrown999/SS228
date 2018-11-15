@@ -3,7 +3,15 @@ import select
 import pandas as pd
 import numpy as np
 
+# custom lib
+from aa228agent import *
 
+
+# global variables
+numActions = 54
+
+alpha = 0.05
+gamma = 0.95
 
 def get_jumper_reward(curData):
 
@@ -43,31 +51,14 @@ def beta(stateVal):
 
 	return beta
 
-
-
-
-def main():
-
-	if len(sys.argv) != 2:
-		raise Exception("usage: python3 jumperbatch.py <infile>.csv")
-
-	inputfilename = sys.argv[1]
-	numStatesVars = 16
-	numActions = 144
-
-	alpha = 0.05
-	gamma = 0.95
-
-	df = pd.read_csv(inputfilename, header=None)
-	dfVals = df.values
-
-	# generate theta
-	betaLen = len(beta(dfVals[0,:]))
-	theta = np.zeros(numActions*betaLen)
+def global_approx(dfVals, theta, numActions, betaLen):
 
 	[m,n] = np.shape(dfVals)
+
 	for i in range(0,m-1):
 		print(i)
+
+
 		# calculate reward for jumper
 		data = np.vstack((dfVals[i,:],dfVals[i+1,:]))
 		reward = get_jumper_reward(data)
@@ -84,32 +75,45 @@ def main():
 		for maxa in range(0,numActions):
 			term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNext)
 
-
+		# update spliced theta
 		theta[action*betaLen:(action+1)*betaLen] += alpha*(reward + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
 
+		# normalize certain value
 		if(sum(theta) > 0):
 			thetaRatio = (1000*len(theta))/sum(theta)
 		else:
 			thetaRatio = 1
-
 		theta = theta*(thetaRatio)
-		#theta = theta/(max(1, max(theta)))
-		#print(theta)
-		#print(theta)
-	np.save("theta.npy",theta)
+
+	return theta
+
+
+def main():
+
+	if len(sys.argv) < 2:
+		raise Exception("usage: python3 jumperbatch.py <infile>.csv <thetasave>.npy <thetaread>.npy")
+
+	# extract data
+	inputfilename = sys.argv[1]
+	df = pd.read_csv(inputfilename, header=None)
+	dfVals = df.values
+
+	# obtain beta length
+	betaLen = len(beta(dfVals[0,:]))
+
+	# create new theta or grab from previous theta
+	if(len(sys.argv) == 4):
+		theta = np.load(sys.argv[3])
+	else:
+		theta = np.zeros(numActions*betaLen)
+
+	# perform global approximation with theta
+	theta = global_approx(dfVals, theta, numActions, betaLen)
+
+	# save theta
+	if(len(sys.argv) == 3):
+		np.save(sys.argv[2],theta)
 	
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
