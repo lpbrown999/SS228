@@ -31,7 +31,7 @@ class SS228agent():
         self.framesSinceInput = 12
         self.framesBetweenCsvLog = 300
         self.lastAction = 0
-        self.buttonSkipList = [Button.BUTTON_MAIN, Button.BUTTON_C, Button.BUTTON_R]
+        self.buttonSkipList = [Button.BUTTON_MAIN, Button.BUTTON_C, Button.BUTTON_R, Button.BUTTON_L]
 
         #Define values for sticks,buttons
         self.stickVals = np.linspace(0,1,3)
@@ -60,6 +60,7 @@ class SS228agent():
         #Tilt the sticks
         mx = buttonPressVec[0]
         my = buttonPressVec[1]    
+        print(mx,my)
         self.controller.tilt_analog(Button.BUTTON_MAIN, mx, my)
         self.controller.tilt_analog(Button.BUTTON_C,  .5, .5)
 
@@ -69,9 +70,11 @@ class SS228agent():
         skipList = self.buttonSkipList.copy()
         if buttonPressVec[2] == 5:
             self.controller.press_shoulder(Button.BUTTON_L, 1)
-            skipList.append(Button.BUTTON_Z)
+            skipList.append(Button.BUTTON_L)
+        else:
+            self.controller.press_shoulder(Button.BUTTON_L, 0)
         
-        elif buttonPressVec[2] == 4:
+        if buttonPressVec[2] == 4:
             self.controller.press_button(Button.BUTTON_Z)
             skipList.append(Button.BUTTON_Z)
 
@@ -110,8 +113,10 @@ class SS228agent():
                 bestActionTerms  = np.zeros(self.numActions)
                 for maxa in range(0,self.numActions):
                     bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
+               
                 actionIdx = bestActionTerms.argmax()    #Linear index of the best action
-            
+                print(actionIdx)                
+
             elif self.style == 'empty':
                 actionIdx = 24
 

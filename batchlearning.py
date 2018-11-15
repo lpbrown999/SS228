@@ -57,7 +57,7 @@ def global_approx(dfVals, theta, numActions, betaLen):
 	[m,n] = np.shape(dfVals)
 
 	for i in range(0,m-1):
-		print(i)
+		#print(i)
 
 		# calculate reward for jumper
 		data = np.vstack((dfVals[i,:],dfVals[i+1,:]))
@@ -107,8 +107,10 @@ def main():
 
 	# create new theta or grab from previous theta
 	if config['BatchLearn']['thetaPrior'] == 'none':
+		print('Initialiizing new theta')
 		theta = np.zeros(numActions*betaLen)
 	else:
+		print('Loading previous theta')
 		theta = np.load(thetaFolderRootName+'/'+thetaFolderName+'/'+thetaPriorName)
 
 	# perform global approximation with theta
