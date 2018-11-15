@@ -3,10 +3,15 @@ import select
 import pandas as pd
 import numpy as np
 
-# custom lib
-
 import argparse
 import configparser
+
+# custom lib
+from betalib import betaDict
+
+
+#functionHandle = betaDict["3"]
+
 
 parser = argparse.ArgumentParser(description='Batch learning for SS228')
 parser.add_argument('--configfile','-p',default = 'config.ini',
@@ -20,6 +25,9 @@ config.read(args.configfile)
 numActions = int(config['BatchLearn']['numActions'])
 alpha = float(config['BatchLearn']['alpha'])
 gamma = float(config['BatchLearn']['gamma'])
+
+beta = betaDict[config['BatchLearn']['beta_function']]
+
 
 def get_jumper_reward(curData):
 
@@ -43,27 +51,6 @@ def get_jumper_reward(curData):
 	reward += -abs(x)
 
 	return reward
-
-# compute beta functions based on state
-def beta(stateVal):
-
-	ax = stateVal[0]
-	ay = stateVal[1]
-
-	if(ax < 0.1):
-		invax = 1000
-	else:
-		invax = 1/ax
-
-	if(ay < 0.1):
-		invay = 1000
-	else:
-		invay = 1/ay
-
-	beta = np.array([ax**2, ay**2, invax, invay])
-	#beta = np.array([ay**2,invay])
-
-	return beta
 
 def global_approx(dfVals, theta, numActions, betaLen):
 
@@ -92,10 +79,11 @@ def global_approx(dfVals, theta, numActions, betaLen):
 		theta[action*betaLen:(action+1)*betaLen] += alpha*(reward + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
 
 		# normalize certain value
-		if(sum(theta) > 0):
-			thetaRatio = (1000*len(theta))/sum(theta)
+		if(np.linalg.norm(theta) != 0):
+			thetaRatio = ((1e15)*len(theta))/np.linalg.norm(theta)
 		else:
 			thetaRatio = 1
+
 		theta = theta*(thetaRatio)
 
 	return theta

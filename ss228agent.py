@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 
 # custom lib
-from beta import *
+# from betalib import betaDict
+
 
 class SS228agent():
-    def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, thetaWeights):
+    def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, thetaWeights, style, beta):
         
         #Self info about game state
         self.gameState = gamestate
@@ -21,14 +22,16 @@ class SS228agent():
         self.controller = melee.controller.Controller(port=selfPort, dolphin=dolphin) 
         self.framedata = melee.framedata.FrameData()
 
-        #Buttons to skip when pressing buttons
-        self.buttonSkipList = [Button.BUTTON_MAIN, Button.BUTTON_C, Button.BUTTON_R]
+        #Playstyle
+        self.style = style
+        self.beta = beta
 
-        #Information for reduced inputs
+        #Information for inputs
         self.framesBetweenInputs = 12
         self.framesSinceInput = 12
         self.framesBetweenCsvLog = 300
         self.lastAction = 0
+        self.buttonSkipList = [Button.BUTTON_MAIN, Button.BUTTON_C, Button.BUTTON_R]
 
         #Define values for sticks,buttons
         self.stickVals = np.linspace(0,1,3)
@@ -41,7 +44,7 @@ class SS228agent():
 
         #Information for global Q learning
         self.thetaWeights = thetaWeights
-        self.betaLen = len(jumper_beta(np.array(self.selfState.tolist())))
+        self.betaLen = len(self.beta(np.array(self.selfState.tolist())))
 
     def simple_button_press(self, actionNumber):
         #Take in an action number, unravel it to the action vector
@@ -91,23 +94,25 @@ class SS228agent():
             else:
                 self.controller.release_button(item)
         
-    def act(self,style='random'):
+    def act(self):
         
         #If it has been enough frames -> we need a new input
         if self.framesSinceInput >= self.framesBetweenInputs:  
             
             #Maybe a better way to handle this? separate functions?
             #Choose an action based on the style!
-            if style == 'random':
+            if self.style == 'random':
                 actionIdx= random.randrange(0,self.numActions-1)
-            elif style == 'jumper':
+            
+            elif self.style == 'jumper':
                 #Greedy
-                betaCurr = jumper_beta(np.array(self.selfState.tolist()))
+                betaCurr = self.beta(np.array(self.selfState.tolist()))
                 bestActionTerms  = np.zeros(self.numActions)
                 for maxa in range(0,self.numActions):
                     bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
                 actionIdx = bestActionTerms.argmax()    #Linear index of the best action
-            elif style == 'empty':
+            
+            elif self.style == 'empty':
                 actionIdx = 24
 
             #Execute action, reset counter, record action
@@ -122,25 +127,6 @@ class SS228agent():
 
         else:
             self.framesSinceInput += 1
-    """
-    def jumper_beta(self):
-        currSelfState = np.array(self.selfState.tolist())
-        ax = currSelfState[0]
-        ay = currSelfState[1]
-
-        if(ax < 0.1):
-            invax = 1000
-        else:
-            invax = 1/ax
-
-        if(ay < 0.1):
-            invay = 1000
-        else:
-            invay = 1/ay
-
-        beta = np.array([ax**2, ay**2, invax, invay])
-        return beta
-    """
 
     def state_action_logger(self):
         combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)

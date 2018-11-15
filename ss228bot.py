@@ -14,6 +14,7 @@ import select
 
 # from esagent import ESAgent -> could make Agent 2 this agent.
 from ss228agent import SS228agent
+from betalib import betaDict
 
 def enter_detected():
     # poll stdin with 0 seconds for timeout
@@ -32,11 +33,6 @@ def check_port(value):
 
 #Argument, config file parsing.
 parser = argparse.ArgumentParser(description='Example of libmelee in action')
-# parser.add_argument('--mode','-m',type=int,default = 1,
-#                     help='Different Modes:\n \
-#                     1 - Human on Port 1, AI on Port 2. \n \
-#                     2 - AI on Port 1 and AI on Port 2. \n \
-#                     3 - Can be added for future use.')
 parser.add_argument('--configfile','-p',default = 'config.ini',
                     help='Specify different config file for different bot runs.')
 args = parser.parse_args()
@@ -45,17 +41,17 @@ config = configparser.ConfigParser()
 config.read(args.configfile)
 
 #Set up the ports based on the mode
-if config['Agent1']['actor'] == 'AI'
+if config['Agent1']['actor'] == 'AI':
     port1Type = melee.enums.ControllerType.STANDARD    #Bot
-elif config['Agent1']['actor'] == 'Human'
+elif config['Agent1']['actor'] == 'Human':
     port1Type = melee.enums.ControllerType.GCN_ADAPTER
 else:
     print("Exiting, actor not defined.")
     sys.exit()
 
-if config['Agent2']['actor'] == 'AI'
+if config['Agent2']['actor'] == 'AI':
     port2Type = melee.enums.ControllerType.STANDARD    #Bot
-elif config['Agent2']['actor'] == 'Human'
+elif config['Agent2']['actor'] == 'Human':
     port2Type = melee.enums.ControllerType.GCN_ADAPTER
 else:
     print("Exiting, actor not defined.")
@@ -77,16 +73,29 @@ print("Dolphing connected.")
 #Initialize agents
 agent1 = None
 agent2 = None
+
+thetaFolderRootName = config['BatchLearn']['thetaFolderRoot']
+logFolderRootName = config['BatchLearn']['logFolderRoot']
+
 if port1Type == melee.enums.ControllerType.STANDARD: #Agent 1 is a bot
-    
+
+    thetaFile = thetaFolderRootName+'/'+config['Agent1']['thetaFolder']+'/'+config['Agent1']['thetaFile']
+    logFile   = logFolderRootName+'/'+config['Agent1']['logFolder']+'/'+config['Agent1']['logFile']
+    beta = betaDict[config['Agent1']['beta_function']]
+
     agent1 = SS228agent(dolphin = dolphin, gamestate = gamestate, selfPort = 1, opponentPort = 2, 
-                        logFile = config['Agent1']['logFile'], thetaWeights = np.load(config['Agent1']['thetaFile']) )
+                        logFile = logFile, thetaWeights = np.load(thetaFile), style = config['Agent1']['style'], beta = beta)
     agent1.controller.connect()
     print("Agent1 controller connected.")
 
 if port2Type == melee.enums.ControllerType.STANDARD:
+
+    thetaFile = thetaFolderRootName+'/'+config['Agent2']['thetaFolder']+'/'+config['Agent2']['thetaFile']
+    logFile   = logFolderRootName+'/'+config['Agent2']['logFolder']+'/'+config['Agent2']['logFile']
+    beta = betaDict[config['Agent2']['beta_function']]
+
     agent2 = SS228agent(dolphin = dolphin, gamestate = gamestate, selfPort = 2, opponentPort = 1, 
-                        logFile = config['Agent2']['logFile'], thetaWeights = np.load(config['Agent2']['thetaFile']) )
+                        logFile = logFile, thetaWeights = np.load(thetaFile), style = config['Agent2']['style'], beta = beta)
     agent2.controller.connect()
     print("Agent2 controller connected.")
 
@@ -115,10 +124,10 @@ while True:
     if gamestate.menu_state == melee.enums.Menu.IN_GAME:
         
         if agent1:
-            agent1.act(style=config['Agent1']['style'])
+            agent1.act()
             agent1.state_action_logger()
         if agent2:
-            agent2.act(style=config['Agent2']['style'])
+            agent2.act()
             #agent2.state_action_logger()
 
     #If we're at the character select screen, choose our character
