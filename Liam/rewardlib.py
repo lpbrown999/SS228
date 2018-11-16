@@ -40,10 +40,10 @@ def jumper_reward(curData):
 	onground_sp = int(sp[12] and sp[1]<1)
 
 	if (onground_s == 1) and (onground_sp == 0): #We left the ground
-		reward += 10
-	elif (onground_s == 1) and (onground_sp == 1): #we failed to leave the ground
-		reward -= 1
-	else:											#we were not on the ground
+		reward += 1
+	elif (onground_s == 1) and (onground_sp == 1): #we were on ground and failed to leave the ground -> heavy penalty
+		reward -= 5
+	else:										#we were not on the ground
 		reward += 0
 
 	return(reward)

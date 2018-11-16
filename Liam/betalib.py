@@ -80,9 +80,20 @@ def jumper_beta_new(stateVal):
 	
 	return beta
 
-def jumper_beta_new(stateVal):
+def jumper_beta_new_anim(stateVal):
+	#Actor y, animation value
 	ay = stateVal[1]
-	beta = np.array([1,ay])
+	anim = int(stateVal[5])
+	onground  = int(stateVal[12] and stateVal[1]<1)
+
+	#print(anim)
+	anim_portion_beta = np.zeros(400) #Approximately for now
+	anim_portion_beta[anim] = 1		  #Turn on the theta weight associated with the current animation
+
+	#POTENTIALLY MORE STABLE WITH OUT ay, JUST WITH onground
+	beta = np.concatenate((np.array([ay,onground]),anim_portion_beta))
+
+	return beta
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
@@ -91,7 +102,8 @@ def jumper_beta_new(stateVal):
 betaDict = {"1": jumper_beta_xy_1,
 			"2": jumper_beta_y,
 			"3": jumper_beta_xy_2,
-			"4": jumper_beta_new}
+			"4": jumper_beta_new,
+			"5": jumper_beta_new_anim}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #

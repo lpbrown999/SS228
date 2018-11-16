@@ -42,9 +42,13 @@ class SS228agent():
         self.actionsShape = (6,self.numStickVals,self.numStickVals)
         self.numActions = np.prod(self.actionsShape)
 
-        #Information for global Q learning
+        #Information from global Q learning
         self.thetaWeights = thetaWeights
-        self.betaLen = len(self.beta(np.array(self.selfState.tolist())))
+        self.betaLen = int(len(self.thetaWeights)/self.numActions)
+
+        #Pass these as more config file shit
+        self.explorationStrategy = 'softmax'
+        self.explorationParam = 9
 
     def simple_button_press(self, actionNumber):
         #Take in an action number, unravel it to the action vector
@@ -109,23 +113,20 @@ class SS228agent():
                 actionIdx= random.randrange(0,self.numActions-1)
             
             elif self.style == 'jumper':
-                #Eps Greedy
-                if random.random() < .1:
-                    actionIdx= random.randrange(0,self.numActions-1)
-                    print('random', actionIdx)
-                else:
-                    betaCurr = self.beta(np.array(self.selfState.tolist()))
-                    bestActionTerms  = np.zeros(self.numActions)
-                    for maxa in range(0,self.numActions):
-                        bestActionTerms[maxa] = np.dot(self.thetaWeights[maxa*self.betaLen:(maxa+1)*self.betaLen],betaCurr)
-                    actionIdx = bestActionTerms.argmax()    #Linear index of the best action
-                    print('greedy', actionIdx)
-            
+                
+                #Compute the expected value of each potential action
+                betaCurr = self.beta( np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()))) )
+                potentialActionValues = np.zeros(self.numActions)
+                for potentialAction in range(0,self.numActions):
+                    potentialActionValues[potentialAction] = np.dot(self.thetaWeights[potentialAction*self.betaLen:(potentialAction+1)*self.betaLen],betaCurr)
+
+                #Choose an action based on exploration strategy
+                actionIdx = self.select_action(potentialActionValues)
+                            
             elif self.style == "forcejump":
 
             	jump = np.array([0, 0.5, 0.5])
             	actionIdx = self.controller_to_action(jump)
-
 
             elif self.style == 'empty':
                 actionIdx = 49
@@ -147,7 +148,6 @@ class SS228agent():
         #Update -> only log on the frames we take an action
         #Since the logger is called after the action function,
         #This is when self.framesSinceInput == 0
-
         #Can revert back by removing just this if statement
         if self.framesSinceInput == 0:
             combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
@@ -160,6 +160,28 @@ class SS228agent():
                 self.logArray = combined_state_action
             else:
                 self.logArray = np.vstack((self.logArray, combined_state_action))
+
+    def select_action(self,potentialActionValues):
+        
+        if self.explorationStrategy == 'softmax':
+            lam = self.explorationParam #SOFTMAX PARAM -> since norming action values to 1 so we dont get infd, need to have this pretty high
+            
+            #Need to normalize the potential action values so we dont get INFd out of our minds
+            potentialActionValues = potentialActionValues/np.linalg.norm(potentialActionValues)
+            prob_i = np.exp(lam*potentialActionValues)
+            #print(sum(prob_i),prob_i)
+
+            #Normalize probs since only proportional from exp
+            prob_i = prob_i/sum(prob_i)
+
+            actions = np.array(range(0,len(prob_i)))
+            actionIdx = np.random.choice(actions,p=prob_i)
+            print("Animation#: ", self.selfState.tolist()[5] ,"Selected: ", actionIdx,"with probability: ", prob_i[actionIdx])
+
+        else:
+            actionIdx = potentialActionValues.argmax()
+
+        return actionIdx
 
     # obtain controller inputs given action number
     def action_to_controller(self,actionNumber):
