@@ -80,9 +80,7 @@ def jumper_beta_new(stateVal):
 	
 	return beta
 
-def jumper_beta_new(stateVal):
-	ay = stateVal[1]
-	beta = np.array([1,ay])
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #

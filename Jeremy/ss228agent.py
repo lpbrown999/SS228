@@ -46,6 +46,9 @@ class SS228agent():
         self.thetaWeights = thetaWeights
         self.betaLen = len(self.beta(np.array(self.selfState.tolist())))
 
+        # slow acting info
+        self.slowActReady = True
+
     def simple_button_press(self, actionNumber):
         #Take in an action number, unravel it to the action vector
         #(6,3,3) = 54 actions
@@ -143,6 +146,44 @@ class SS228agent():
         else:
             self.framesSinceInput += 1
 
+    # acts slowly
+    # takes and holds action until idle state (state[5] == 14)
+    # sends empty input then selects new action
+    def act_slow(self):
+
+        state = self.selfState.tolist()
+
+        # if slow act is ready generate new move
+        if(self.slowActReady):
+
+            self.slowActReady = False
+            actionIdx = random.randrange(0,self.numActions-1)
+            print("New action time")
+
+            self.simple_button_press(actionIdx)
+            self.lastAction = actionIdx
+            self.framesSinceInput = 0
+
+        elif(self.framesSinceInput >= 10):
+
+            actionIdx = 49
+            self.simple_button_press(actionIdx)
+            self.framesSinceInput = 0
+
+        else:
+
+            self.framesSinceInput += 1
+
+            # idle state, empty input
+            if(state[5] == 14):
+
+                print("Idle state encountered")
+                actionIdx = 49
+                self.slowActReady = True
+                self.simple_button_press(actionIdx)
+                self.lastAction = actionIdx
+
+
     def state_action_logger(self):
         #Update -> only log on the frames we take an action
         #Since the logger is called after the action function,
@@ -150,7 +191,9 @@ class SS228agent():
 
         #Can revert back by removing just this if statement
         if self.framesSinceInput == 0:
-            combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
+            #combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
+            print(self.action_to_controller(self.lastAction))
+            combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array([self.lastAction]),self.action_to_controller(self.lastAction)),axis=0)
             #Log the array
             if np.size(self.logArray,axis=0) == self.inputsBetweenCsvLog:
                 df = pd.DataFrame(self.logArray)
