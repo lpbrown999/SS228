@@ -124,7 +124,8 @@ while True:
     if gamestate.menu_state == melee.enums.Menu.IN_GAME:
         
         if agent1:
-            agent1.act()
+            agent1.act_slow()
+            #agent1.act()
             agent1.state_action_logger()
         if agent2:
             agent2.act()
