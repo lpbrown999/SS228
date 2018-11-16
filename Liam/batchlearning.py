@@ -34,9 +34,9 @@ def global_approx(dfVals, theta, numActions, betaLen, iterations):
 
 	[m,n] = np.shape(dfVals)
 	for j in range(0,iterations):
-		print('Iterations Pctg Complete:', round(j/iterations,3))
 		for i in range(0,m-1):
-
+			print('Iter Pctg:', round(j/iterations,3), 'Cur iter pctg:', round(i/(m-1),3))
+			
 			#State S and Sp
 			s_sp = np.vstack((dfVals[i,:],dfVals[i+1,:]))
 
@@ -58,14 +58,14 @@ def global_approx(dfVals, theta, numActions, betaLen, iterations):
 			betaNext = beta(s_sp[1,:])
 			
 			# #QLEARNING
-			# # Maximization term
-			# term2 = np.zeros(numActions)
-			# for maxa in range(0,numActions):
-			# 	term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNext)
-			# theta[action*betaLen:(action+1)*betaLen] += alpha*(r + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
+			# Maximization term
+			term2 = np.zeros(numActions)
+			for maxa in range(0,numActions):
+				term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNext)
+			theta[action*betaLen:(action+1)*betaLen] += alpha*(r + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
 			
 			#SARSA
-			theta[action*betaLen:(action+1)*betaLen] += alpha*(r + gamma*np.dot(theta[action_p*betaLen:(action_p+1)*betaLen],betaNext) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
+			#theta[action*betaLen:(action+1)*betaLen] += alpha*(r + gamma*np.dot(theta[action_p*betaLen:(action_p+1)*betaLen],betaNext) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
 
 			#Normalize theta to keep bounded since theta abs can diverge -> multiply by arbitray large number
 			# if(np.linalg.norm(theta) != 0):
@@ -73,7 +73,7 @@ def global_approx(dfVals, theta, numActions, betaLen, iterations):
 			# else:
 			# 	thetaRatio = 1
 		
-			print(max(theta))
+			#print(max(theta))
 			thetaRatio = 1
 			theta = theta*(thetaRatio)
 

@@ -48,7 +48,7 @@ class SS228agent():
 
         #Pass these as more config file shit
         self.explorationStrategy = 'softmax'
-        self.explorationParam = 9
+        self.explorationParam = 20
 
     def simple_button_press(self, actionNumber):
         #Take in an action number, unravel it to the action vector
@@ -129,6 +129,8 @@ class SS228agent():
             	actionIdx = self.controller_to_action(jump)
 
             elif self.style == 'empty':
+                curOppState = self.oppState.tolist()
+                print(curOppState[1],curOppState[12],curOppState[5])
                 actionIdx = 49
 
             #Execute action, reset counter, record action
@@ -169,7 +171,6 @@ class SS228agent():
             #Need to normalize the potential action values so we dont get INFd out of our minds
             potentialActionValues = potentialActionValues/np.linalg.norm(potentialActionValues)
             prob_i = np.exp(lam*potentialActionValues)
-            #print(sum(prob_i),prob_i)
 
             #Normalize probs since only proportional from exp
             prob_i = prob_i/sum(prob_i)

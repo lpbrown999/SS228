@@ -125,10 +125,10 @@ while True:
         
         if agent1:
             agent1.act()
-            agent1.state_action_logger()
+            #agent1.state_action_logger()
         if agent2:
             agent2.act()
-            #agent2.state_action_logger()
+            agent2.state_action_logger()
 
     #If we're at the character select screen, choose our character
     elif gamestate.menu_state == melee.enums.Menu.CHARACTER_SELECT:

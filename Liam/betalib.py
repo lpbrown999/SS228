@@ -91,7 +91,10 @@ def jumper_beta_new_anim(stateVal):
 	anim_portion_beta[anim] = 1		  #Turn on the theta weight associated with the current animation
 
 	#POTENTIALLY MORE STABLE WITH OUT ay, JUST WITH onground
-	beta = np.concatenate((np.array([ay,onground]),anim_portion_beta))
+	beta = np.concatenate((np.array([0,onground]),anim_portion_beta))
+
+	#New idea: RBF for Y, X in same way that we have anim_portion_beta -> large vector
+	# may prevent divergence?
 
 	return beta
 
