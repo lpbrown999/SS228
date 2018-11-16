@@ -1,50 +1,31 @@
 \documentclass[11pt]{article}
-\usepackage{amssymb,amsthm}
-\usepackage[fleqn]{amsmath}
 \usepackage{graphicx}
-\usepackage{color}
-\usepackage{physics}
-\addtolength{\evensidemargin}{-.5in}
-\addtolength{\oddsidemargin}{-.5in}
-\addtolength{\textwidth}{0.8in}
-\addtolength{\textheight}{0.8in}
-\addtolength{\topmargin}{-.4in}
-\newtheoremstyle{quest}{\topsep}{\topsep}{}{}{\bfseries}{}{ }{\thmname{#1}\thmnote{ #3}.}
-\theoremstyle{quest}
-\newtheorem*{definition}{Definition}
-\newtheorem*{theorem}{Theorem}
-\newtheorem*{question}{Question}
-\newtheorem*{exercise}{Exercise}
-\newtheorem*{challengeproblem}{Challenge Problem}
+\usepackage[margin=.5in]{geometry}
 
-
-\newcommand{\name}{Jeremy Crowley and Liam Brown}
-
-
-
-\title{\vspace{-50pt}
-\Huge \name
-\\\vspace{20pt}
-\huge AA 228 \hfill Project Update}
-\author{}
-\date{}
-\pagestyle{myheadings}
-\markright{\name\hfill Project Update\qquad\hfill}
-
-%% If you want to define a new command, you can do it like this:
-\newcommand{\Q}{\mathbb{Q}}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\Z}{\mathbb{Z}}
-\newcommand{\C}{\mathbb{C}}
-
-
-
-
+\title{\vspace{-0cm}AA228 Final Project Status Update}
+\author{Jeremy Crowley and Liam Brown}
 \begin{document}
+
 \maketitle
 
-We are designing an agent for super smash bros melee that uses Q-learning with global approximation to generate an optimal policy to win a match. We define a state space and an action space to frame our problem.
+\section{Introduction}
+For our final project we are training an agent to play and defeat the default agent in Super Smash Brothers Melee using global approximation Q-learning. To do this we are leveraging the open source python library "libmelee", which provides state information from the game as well as the Gamecube emulator Dolphin.
 
+\section{State and Action Space}
+talk about how we discreized controller actions, states, etc
+
+\section{Progress}
+In order to verify our ideas, we decided to initially train an agent to jump. To do this, we first gathered data from a completely random agent playing the game for 20 minutes. We then constructed what we believed were adequate basis functions, consisting of the agents current height off the ground taken to various powers $\beta(s) = [y, y^2, 1/y]$. The weights $\theta_a$ for different actions for the basis functions were trained using batch-learning global approximation as in algorithm 5.5 of DMU\cite{DMU}. Rewards were assigned when the agent transitioned from being on the ground in state $s_t$ to off the ground in state $s_{t+1}$, and gave penalties when the agent remained on the ground between states $s_t$ and $s_{t+1}$. This initial attempt failed, resulting in an agent that would simply crouch, indicating there were flaws in our strategy required refinement.
+
+First, the initial design resulted in the agent acting every gamestep, inputting 60 actions a second. This is both unrealistic in that the game is not intended to be played with this many inputs, as well as harmful in that it does not allow for state-evolution between action inputs so the bot cannot determine the impacts of a single action on the change in state. The agent was changed so that it now acts on every twelfth frame, corresponding to five times a second. This is a large improvement in that it both better simulates actual gameplay, as well as accommodates the evolution of the state between decisions. It is also beneficial for training as the impacts of a single action are much clearer.
+
+Another flaw to be addressed was the impact of "action-lockout", in which an action taken by the bot may have no impact on its current in game movements due to previous actions taken. An example of this is when the bot inputs a move that has a long wind-up animation that cannot be canceled by other actions. To address this, we now skip over actions input during an "action-lockout" when training the weights of our basis functions so that weights of actions that did not impact the state evolution do not change.
+
+We also believe our initial data set was far too small to train our weights, and decided to regather data. We allowed a random agent to play overnight, gathering 9.5 hours (171,000 samples) worth of of data.
+
+Lastly, the basis functions were reworked. Now the basis function $\beta(s)$ is a flag of 0 or 1 for if the agent is on the ground, as well as 400 flags indicating the current action of the agent (i.e. if the agent is currently in animation 326, the 326th element of the basis function for the animations will be a 1 with all the rest being a 0).
+
+The result of these modifications is an agent that has succesfully learned to jump. Below is a table 
 \vspace{2mm}
 
 %% State Space
@@ -102,6 +83,13 @@ Binary:
 \item $\Omega_{4}$ - X
 \end{itemize}
 
+\begin{thebibliography}{999}
+\bibitem{DMU}
+	Kochenderfer, Mykel,
+	\emph{Decision Making Under Uncertainty}.
+	The MIT Press, 2015.
+
+\end{thebibliography}
 
 
 \end{document}
