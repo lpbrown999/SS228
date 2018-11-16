@@ -71,7 +71,6 @@ def jumper_beta_xy_2(stateVal):
 	return beta
 
 def jumper_beta_new(stateVal):
-	#Curdata
 	# obtain states for agent 1 and agent 2
 	# x,y,%,stocks,self.facing,self.action.value, self.action.frame, invulnerable, hitlag frames . . .
 	# hitstunframes, charging smash, jumps left, on ground, x speed, y speed, off stage
@@ -81,7 +80,9 @@ def jumper_beta_new(stateVal):
 	
 	return beta
 
-
+def jumper_beta_new(stateVal):
+	ay = stateVal[1]
+	beta = np.array([1,ay])
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #

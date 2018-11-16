@@ -27,13 +27,20 @@ def main():
 	lenBeta = int(len(theta)/numActions)
 	theta = theta.reshape(numActions, lenBeta)
 
-	#Simulated beta function 
+	#Simulated state beta function 
 	stateval = [0,0]
+
+	np.set_printoptions(precision=3)
 
 	for a,thetaA in enumerate(theta):
 
-		value = np.dot(thetaA,beta(stateval))
-		print(thetaA,value,a)
+		value = np.array(np.dot(thetaA,beta(stateval)))
+		#Decode action
+        # unravel action number based on action shape array
+		buttonPressVec = np.array(np.unravel_index(a,(6,3,3)), dtype=np.float)
+		buttonPressVec[1:3] = buttonPressVec[1:3]/(3-1)
+
+		print(a,"\t", buttonPressVec,"\t", str.format('{0:.3f}',value), "\t",thetaA)
 
 if __name__ == '__main__':
 	main()
