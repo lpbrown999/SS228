@@ -97,7 +97,7 @@ def main():
 	df = pd.read_csv(inputFolderRootName+'/'+inputFolderName+'/'+inputFileName, header=None)
 	dfVals = df.values
 
-	betaLen = len(beta(dfVals[0,:])) 	# obtain beta length
+	betaLen = len(beta(dfVals[0,:]))
 
 	# create new theta or grab from previous theta
 	if config['BatchLearn']['thetaPrior'] == 'none':

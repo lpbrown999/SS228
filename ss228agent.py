@@ -123,14 +123,14 @@ class SS228agent():
                 #Choose an action based on exploration strategy
                 actionIdx = self.select_action(potentialActionValues)
                             
-            elif self.style == "forcejump":
+            elif self.style == 'forcejump':
 
             	jump = np.array([0, 0.5, 0.5])
             	actionIdx = self.controller_to_action(jump)
 
             elif self.style == 'empty':
-                curOppState = self.oppState.tolist()
-                print(curOppState[1],curOppState[12],curOppState[5])
+                actionIdx = 49
+            else:
                 actionIdx = 49
 
             #Execute action, reset counter, record action

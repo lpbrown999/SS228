@@ -2,7 +2,7 @@ import sys
 import select
 import pandas as pd
 import numpy as np
-
+import scipy.stats
 # Note, all these y's are almost meaningless because it spends most of its time on the ground
 # and then 0**2 = 0 -> no way for it to train these weights. Need to augment these?
 
@@ -88,7 +88,8 @@ def jumper_beta_new_anim(stateVal):
 
 	#print(anim)
 	anim_portion_beta = np.zeros(400) #Approximately for now
-	anim_portion_beta[anim] = 1		  #Turn on the theta weight associated with the current animation
+	if (anim < 400) and (anim >= 0):
+		anim_portion_beta[anim] = 1		  #Turn on the theta weight associated with the current animation
 
 	#POTENTIALLY MORE STABLE WITH OUT ay, JUST WITH onground
 	beta = np.concatenate((np.array([0,onground]),anim_portion_beta))
@@ -98,6 +99,26 @@ def jumper_beta_new_anim(stateVal):
 
 	return beta
 
+def jumper_beta_xbound(stateVal):
+	#Agent x,y, animation value
+	ax = stateVal[0]
+	ay = stateVal[1]
+	
+	anim = int(stateVal[5])
+	onground  = int(stateVal[12] and stateVal[1]<1)
+
+	anim_portion_beta = np.zeros(400) #Approximately for now
+	if (anim < 400) and (anim >= 0):
+		anim_portion_beta[anim] = 1		  #Turn on the theta weight associated with the current animation
+
+	#x basis functions centered at various locations
+	sigma = 10
+	x_portion = scipy.stats.norm.pdf(ax,np.array(range(-300,300)),sigma)
+
+	#Assemble all basis functions
+	beta = np.concatenate( (np.array([0,onground]),anim_portion_beta, x_portion) )
+
+	return beta
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -106,7 +127,8 @@ betaDict = {"1": jumper_beta_xy_1,
 			"2": jumper_beta_y,
 			"3": jumper_beta_xy_2,
 			"4": jumper_beta_new,
-			"5": jumper_beta_new_anim}
+			"5": jumper_beta_new_anim,
+			"6": jumper_beta_xbound}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
