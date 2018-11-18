@@ -22,7 +22,7 @@ This contains an important update to allow Dolphin to be able to read informatio
 
 3. Make sure you're running Melee v1.02 NTSC. Other versions will not work.
 
-4. If you want to play interactively with or against your AI, you'll probably want a GameCube Adapter, available on Amazon here: https://www.amazon.com/Super-Smash-GameCube-Adapter-Wii-U/dp/B00L3LQ1FI
+4. If you want to play interactively with or against the AI, you'll probably want a GameCube Adapter, available on Amazon here: https://www.amazon.com/Super-Smash-GameCube-Adapter-Wii-U/dp/B00L3LQ1FI
 
 5. If you're using a GameCube Adapter, make sure to install the drivers / confugure the udev rules, as described here:
 https://wiki.dolphin-emu.org/index.php?title=How_to_use_the_Official_GameCube_Controller_Adapter_for_Wii_U_in_Dolphin
@@ -31,6 +31,8 @@ https://wiki.dolphin-emu.org/index.php?title=How_to_use_the_Official_GameCube_Co
 
 7. Apply `Press Y to toggle frozen stages` Gecko Code. If you want to play on Pokemon Stadium, use the frozen version.
 
-8. Run `smashbot.py`
+7. Configure the bot as desired in config.ini, and make necessary changes in the script file (stage, character, etc).
 
-9. By default, SmashBot takes controller 2, and assumes you're on controller 1. You can change this with the `--port N`  option to change SmashBot's port, and `--opponent N` to change the human player's port.
+8. Run `ss228bot.py`
+
+9. Pray you do not clog the system pipes when quitting. For best experience, press enter on terminal to quit the bot, use cmd+Q to quit dolphin, and reset controllers when restarting dolphin.
