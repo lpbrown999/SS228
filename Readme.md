@@ -1,5 +1,5 @@
 # SmashBot for AA2288 - Decision Making Under Uncertainty
-###### The AI that beats you at Melee
+###### An SSBM Captain Falcon Agent
 
 ### FAQ
 
