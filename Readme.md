@@ -1,15 +1,15 @@
 # SmashBot for AA2288 - Decision Making Under Uncertainty
-###### An SSBM Captain Falcon Agent
+###### A Perceptron Q Learning SSBM Captain Falcon Agent
 
 ### FAQ
 
 1. **What?**
 
-    A repo of a reinforcement learning project that is teaching an agent to play Captain Falcon effectively in the video game "Super Smash Brothers Melee".
+    A repo of a reinforcement learning (Perceptron Q learning) that trains an agent to play Captain Falcon effectively in the video game "Super Smash Brothers Melee".
 
 2. **Why?**
     
-    We chose this (reinforcement learning for an agent in SSBM) as our final project for AA228: Decision Making under Uncertainty at Stanford University, Fall 2018 (http://web.stanford.edu/class/aa228/).
+    We chose this as our final project for AA228: Decision Making under Uncertainty at Stanford University, Fall 2018 (http://web.stanford.edu/class/aa228/).
 
 ## Setup Steps - From Smashbot:
 
