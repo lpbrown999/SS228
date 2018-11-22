@@ -3,103 +3,25 @@ import select
 import pandas as pd
 import numpy as np
 import scipy.stats
-# Note, all these y's are almost meaningless because it spends most of its time on the ground
-# and then 0**2 = 0 -> no way for it to train these weights. Need to augment these?
 
-# Beta functions need to be chosen to have ACTIVATION at important states -> return high value
-# in states we care about. Currently they are returning 0 when we are in the most critical state (on the ground)
-# Idea: beta = sqrt(10-ay) -> gives high activation when on ground, decays upward. Does better than 1/y
+#stateVal should always be concatenation of selfState, oppState
 
-# beta functions relating to our y value and x value
-def jumper_beta_xy_1(stateVal):
-
-	ax = stateVal[0]
-	ay = stateVal[1]
-
-	# cap inverse of x
-	if(ax < 0.1):
-		invax = 1000
-	else:
-		invax = 1/ax
-
-	# cap inverse of y
-	if(ay < 0.1):
-		invay = 1000
-	else:
-		invay = 1/ay
-
-	# set basis functions
-	beta = np.array([ax**2, ay**2, invax, invay])
-	
-	return beta
-
-# beta functions relating to our y value
-def jumper_beta_y(stateVal):
-	ay = stateVal[1]
-
-	# cap inverse of y
-	if(ay < 0.1):
-		invay = 1000
-	else:
-		invay = 1/ay
-
-	# set basis functions
-	beta = np.array([ay**2,invay])
-
-	return beta
-
-def jumper_beta_xy_2(stateVal):
-
-	ax = stateVal[0]
-	ay = stateVal[1]
-
-	# cap inverse of x
-	if(ax < 0.1):
-		invax = 1000
-	else:
-		invax = 1/ax
-
-	# cap inverse of y
-	if(ay < 0.1):
-		invay = 1000
-	else:
-		invay = 1/ay
-
-	# set basis functions
-	beta = np.array([ax**3, ay**3, invax, invay])
-	
-	return beta
-
-def jumper_beta_new(stateVal):
-	# obtain states for agent 1 and agent 2
-	# x,y,%,stocks,self.facing,self.action.value, self.action.frame, invulnerable, hitlag frames . . .
-	# hitstunframes, charging smash, jumps left, on ground, x speed, y speed, off stage
-
-	ay = stateVal[1]
-	beta = np.array([1, ay, np.sign(ay)*(ay**2), np.sqrt(max(0,5-ay))])
-	
-	return beta
-
-def jumper_beta_new_anim(stateVal):
-	#Actor y, animation value
+def jumper_animation(stateVal):
+	#Define if we are on the ground
 	ay = stateVal[1]
 	anim = int(stateVal[5])
 	onground  = int(stateVal[12] and stateVal[1]<1)
 
-	#print(anim)
-	anim_portion_beta = np.zeros(400) #Approximately for now
+	anim_portion = np.zeros(400) 	  #Approximately 400 animation for now
 	if (anim < 400) and (anim >= 0):
-		anim_portion_beta[anim] = 1		  #Turn on the theta weight associated with the current animation
+		anim_portion[anim] = 1		  #Turn on the theta weight associated with the current animation
 
-	#POTENTIALLY MORE STABLE WITH OUT ay, JUST WITH onground
-	beta = np.concatenate((np.array([0,onground]),anim_portion_beta))
-
-	#New idea: RBF for Y, X in same way that we have anim_portion_beta -> large vector
-	# may prevent divergence?
+	#Just flag of if we are on the ground, and the animation gector
+	beta = np.concatenate((np.array([onground]),anim_portion))
 
 	return beta
 
-def jumper_beta_xbound(stateVal):
+def jumper_animation_new(stateVal):
 	#Agent x,y, animation value
 	ax = stateVal[0]
 	ay = stateVal[1]
@@ -119,33 +41,15 @@ def jumper_beta_xbound(stateVal):
 	beta = np.concatenate( (np.array([0,onground]),anim_portion_beta, x_portion) )
 
 	return beta
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-# Remeber to update this dictionary when adding a new beta function #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-betaDict = {"1": jumper_beta_xy_1,
-			"2": jumper_beta_y,
-			"3": jumper_beta_xy_2,
-			"4": jumper_beta_new,
-			"5": jumper_beta_new_anim,
-			"6": jumper_beta_xbound}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+betaDict = {"1": jumper_animation,		
+			"2": jumper_animation_new}
 
-
-# example of how to use this dicionary of function
-
-"""
-from beta import betaDict
-
-functionHandle = betaDict["3"]
-
-print(functionHandle(4))
-"""
-
-
-
-
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Remeber to update this dictionary when adding a new beta function #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

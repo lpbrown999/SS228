@@ -10,7 +10,7 @@ import random
 
 
 class SS228agent():
-    def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, thetaWeights, style, beta):
+    def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, thetaWeights, style, beta, explStrat, explParam):
         
         #Self info about game state
         self.gameState = gamestate
@@ -47,8 +47,8 @@ class SS228agent():
         self.betaLen = int(len(self.thetaWeights)/self.numActions)
 
         #Pass these as more config file shit
-        self.explorationStrategy = 'softmax'
-        self.explorationParam = 20
+        self.explStrat = explStrat
+        self.explParam = explParam
 
     def simple_button_press(self, actionNumber):
         #Take in an action number, unravel it to the action vector
@@ -165,8 +165,8 @@ class SS228agent():
 
     def select_action(self,potentialActionValues):
         
-        if self.explorationStrategy == 'softmax':
-            lam = self.explorationParam #SOFTMAX PARAM -> since norming action values to 1 so we dont get infd, need to have this pretty high
+        if self.explStrat == 'softmax':
+            lam = self.explParam #SOFTMAX PARAM -> since norming action values to 1 so we dont get infd, need to have this pretty high
             
             #Need to normalize the potential action values so we dont get INFd out of our minds
             potentialActionValues = potentialActionValues/np.linalg.norm(potentialActionValues)

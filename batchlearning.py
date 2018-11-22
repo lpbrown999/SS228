@@ -22,9 +22,11 @@ config.read(args.configfile)
 numActions = int(config['BatchLearn']['numActions'])
 alpha = float(config['BatchLearn']['alpha'])
 gamma = float(config['BatchLearn']['gamma'])
+iterations = int(config['BatchLearn']['iterations'])
+
 print('Alpha: ', alpha)
 print('Gamma: ', gamma)
-
+print('Iter: ', iterations)
 #Functions
 print('BetaFunc: '  ,config['BatchLearn']['beta_function'])
 print('RewardFunc: ',config['BatchLearn']['reward_function'])
@@ -73,26 +75,26 @@ def global_approx(dfVals, theta, numActions, betaLen, iterations):
 			# else:
 			# 	thetaRatio = 1
 		
-			#print(max(theta))
-			thetaRatio = 1
-			theta = theta*(thetaRatio)
+			# #print(max(theta))
+			# thetaRatio = 1
+			# theta = theta*(thetaRatio)
 
 	return theta
 
 def main():
 
-	#Read from config file
+	#Log file locations
 	inputFileName = config['BatchLearn']['logFile']
 	inputFolderName = config['BatchLearn']['logFolder']
 	inputFolderRootName = config['BatchLearn']['logFolderRoot']
 
+	#Theta file locations
 	thetaPriorName = config['BatchLearn']['thetaPrior']
 	thetaPostName = config['BatchLearn']['thetaOutput']
 
 	thetaFolderName = config['BatchLearn']['thetaFolder']
 	thetaFolderRootName = config['BatchLearn']['thetaFolderRoot']
 	
-	iterations = int(config['BatchLearn']['iterations'])
 
 	df = pd.read_csv(inputFolderRootName+'/'+inputFolderName+'/'+inputFileName, header=None)
 	dfVals = df.values
@@ -106,7 +108,6 @@ def main():
 	else:
 		print('Loading previous theta')
 		theta = np.load(thetaFolderRootName+'/'+thetaFolderName+'/'+thetaPriorName)
-
 	input("Ok to continue?")
 
 	# perform global approximation with theta, save
