@@ -37,9 +37,13 @@ def jumper_animation_new(stateVal):
 	sigma = 10
 	x_portion = scipy.stats.norm.pdf(ax,np.array(range(-300,300)),sigma)
 
-	#Assemble all basis functions
-	beta = np.concatenate( (np.array([0,onground]),anim_portion_beta, x_portion) )
+	#Facing  - 1 for right, 0 for left
+	facingVal = stateVal[4]
+	facing_portion = np.zeros(2)
+	facing_portion[int(facingVal)] = 1
 
+	#Assemble all basis functions
+	beta = np.concatenate( (np.array([0,onground]), anim_portion_beta, x_portion, facing_portion) )
 	return beta
 
 

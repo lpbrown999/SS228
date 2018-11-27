@@ -14,6 +14,10 @@ from rewardlib import rewardDict
 #Can call directly by importing batchlearning
 def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations, numActions, betaLen):
 	
+	#Incase not(inSameAnimSequence does not go off on same one)
+	action = 0
+	betaCur = beta(data[0,:])
+
 	[m,n] = np.shape(data)
 	for j in range(0,iterations):
 		for i in range(0,m-1):
@@ -22,29 +26,31 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 			#State S and Sp
 			s_sp = np.vstack((data[i,:],data[i+1,:]))
 
-			#Skip updating theta for actions that did not effect our characters animation
+			#Assign credit for state evolution (tm Jeremy Crowley patent pending) to actions that caused a new
+			#animation sequence, rather than skipping over entirely (remember 11/26 convo about falcon kick across stage (eggnog))
 			animation_s = s_sp[0,5]
 			animation_frame_s = s_sp[0,6]
 			animation_sp = s_sp[1,5]
 			animation_frame_sp = s_sp[1,6]
-			if (animation_s == animation_sp) and (animation_frame_sp > animation_frame_s):
-				continue
+			inSameAnimSequence = ((animation_s == animation_sp) and (animation_frame_sp > animation_frame_s))
+			
+			if not(inSameAnimSequence):
+				action = int(s_sp[0,-1])
+				betaCur = beta(s_sp[0,:])
 
-			# Action taken at state s, reward from states and sp
+			#Reward from on going state evolution
 			r = reward(s_sp)			
-			action = int(s_sp[0,-1])
 
 			# Beta evaluated at s, sp
-			betaCur = beta(s_sp[0,:])
 			betaNext = beta(s_sp[1,:])
 			
 			#Maximization term
 			term2 = np.zeros(numActions)
 			for maxa in range(0,numActions):
 				term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNext)
+
 			theta[action*betaLen:(action+1)*betaLen] += alpha*(r + gamma*max(term2) - np.dot(theta[action*betaLen:(action+1)*betaLen],betaCur))*betaCur
 	
-	#Return updated theta
 	return theta
 
 #If running from command line!

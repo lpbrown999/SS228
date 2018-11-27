@@ -162,7 +162,7 @@ class SS228agent():
 			#Possible choices
 			actions = np.array(range(0,self.numActions))
 			actionIdx = np.random.choice(actions,p=prob_i)
-			#print("Animation#: ", self.selfState.tolist()[5] ,"Selected: ", actionIdx,"with probability: ", prob_i[actionIdx])
+			print("Animation#: ", self.selfState.tolist()[5] ,"Selected: ", actionIdx,"with probability: ", prob_i[actionIdx])
 		else:
 			actionIdx = potentialActionValues.argmax()
 		return actionIdx
@@ -216,8 +216,9 @@ class SS228agent():
 			print("Loading new theta file!: ", newThetaFile)
 			self.thetaWeights = np.load(newThetaFile)
 		else:
-			print("Invalid theta (beta weights) for Initializing to 0s: ", newthetaFile)
-			self.thetaWeights = np.zeros(beta(np.zeros(32)).size)  
+			print("Invalid theta (beta weights) for Initializing to 0s: ", newThetaFile)
+			self.thetaWeights = np.zeros(self.beta(np.zeros(32)).size*self.numActions) 
+			np.save(newThetaFile, self.thetaWeights)
 	
 	def action_to_controller(self,actionNumber):
 		# unravel action number based on action shape array, obtain stick values
