@@ -216,7 +216,7 @@ class SS228agent():
 			print("Loading new theta file!: ", newThetaFile)
 			self.thetaWeights = np.load(newThetaFile)
 		else:
-			print("Invalid theta (beta weights) for Initializing to 0s: ", thetaFile)
+			print("Invalid theta (beta weights) for Initializing to 0s: ", newthetaFile)
 			self.thetaWeights = np.zeros(beta(np.zeros(32)).size)  
 	
 	def action_to_controller(self,actionNumber):

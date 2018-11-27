@@ -50,8 +50,12 @@ def jumper_xbound_reward(curData):
 	ax_sp = sp[0]
 
 	#Penalize if we are more than 50 units from center stage and we move further away
-	if (abs(ax_s) > 50) and (abs(ax_sp)>abs(ax_s)):
-		reward -= 5
+	#Reward for moving back to center stage
+	if (abs(ax_s) > 50):
+		if (abs(ax_sp)>abs(ax_s)):
+			reward -= (abs(ax_sp)-50)		#Linear ramping penalty for moving away
+		elif (abs(ax_sp)<abs(ax_s)):
+			reward += 1
 
 	return(reward)
 
