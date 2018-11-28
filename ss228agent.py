@@ -19,7 +19,9 @@ class SS228agent():
 		self.oppState  = self.gameState.player[opponentPort]
 		self.controller = melee.controller.Controller(port=selfPort, dolphin=dolphin) 
 		self.framedata = melee.framedata.FrameData()
-		
+		self.selfPort = selfPort
+		self.opponentPort = opponentPort
+
 		#Logger files, array
 		self.logFile = logFile
 		self.tempLogFile = tempLogFile
@@ -213,10 +215,10 @@ class SS228agent():
 	def update_theta(self, newThetaFile):
 		#Updates from file. Warns if cannot update.
 		if os.path.isfile(newThetaFile):
-			print("Loading new theta file!: ", newThetaFile)
+			print("Agent: ",self.selfPort," Loading new theta file: ", newThetaFile)
 			self.thetaWeights = np.load(newThetaFile)
 		else:
-			print("Invalid theta (beta weights) for Initializing to 0s: ", newThetaFile)
+			print("Agent: ",self.selfPort," Theta file not specified / found, initializing to 0s: ", newThetaFile)
 			self.thetaWeights = np.zeros(self.beta(np.zeros(32)).size*self.numActions) 
 			np.save(newThetaFile, self.thetaWeights)
 	
