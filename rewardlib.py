@@ -61,14 +61,44 @@ def jumper_xbound_reward(curData):
 	elif (abs(ax_sp)<good_x):
 		reward += 1
 
-	return(reward)
+	return reward
+
+#Only based on damage
+def fighter_reward(curData):
+	reward = 0
+	didDamage = 0
+
+	s = curData[0,:]
+	sp = curData[1,:]
+
+	#Agent, opponent percents in state S, Sp
+	aPctgS  = s[2]
+	aPctgSp = sp[2]
+
+	oPctgS  = s[2+16]
+	oPctgSp = sp[2+16]
+
+	aDelPctg = aPctgSp - aPctgS
+	oDelPctg = oPctgSp - oPctgS
+
+	#Assign reward for doing damage -> ignore doing or taking 1 damge for hoop damage.
+	if oDelPctg > 1:
+		reward += oDelPctg*np.exp(-0.01*oPctgS)
+		didDamage = 1
+
+	#Penalty for taking damage -> twice as a bad as doing damage
+	if aDelPctg > 1:
+		reward -= 2*aDelPctg*np.exp(-0.01*aPctgS)
+
+	return reward
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 rewardDict = {"1": jumper_reward,
-			  "2": jumper_xbound_reward}
+			  "2": jumper_xbound_reward,
+			  "3": fighter_reward}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Remeber to update this dictionary when adding a new beta function #
