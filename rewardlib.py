@@ -86,9 +86,9 @@ def fighter_reward(curData):
 		reward += oDelPctg*np.exp(-0.01*oPctgS)
 		didDamage = 1
 
-	#Penalty for taking damage -> twice as a bad as doing damage
+	#Penalty for taking damage -> no multiplyer
 	if aDelPctg > 1:
-		reward -= 2*aDelPctg*np.exp(-0.01*aPctgS)
+		reward -= aDelPctg*np.exp(-0.01*aPctgS)
 
 	return reward
 

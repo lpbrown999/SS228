@@ -14,7 +14,10 @@ from rewardlib import rewardDict
 #Can call directly by importing batchlearning
 def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations, numActions, betaLen):
 	
-	#Incase not(inSameAnimSequence does not go off on same one)
+	killReward = 100	#Assigned to last damaging action before kill
+	deathReward = -10	#Assigned to all actions in sequence of actions that caued death.
+
+	#Incase not(inSameAnimSequence) does not go off on first run through.
 	action = 0
 	betaCur = beta(data[0,:])
 
@@ -23,6 +26,7 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 	lastDamagingBetaS = beta(data[0,:])
 	lastDamagingBetaSp = beta(data[0,:])
 
+	#For assigning penalties to deaths
 	actionHistoryLen = 20
 	actionHistory = [0]*actionHistoryLen
 	betaHistoryS =  [0]*actionHistoryLen
@@ -30,7 +34,7 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 
 	[m,n] = np.shape(data)
 	for j in range(0,iterations):
-		for i in range(0,m-1):
+		for i in range(5,m-1):			#Skip the startup of the game -> 1 second
 
 			#State S and Sp
 			s_sp = np.vstack((data[i,:],data[i+1,:]))
@@ -68,7 +72,7 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 
 			died = 0
 			gotKill = 0	
-			if (oppPctgSp-oppPctgS) > 1:			#If we did damage
+			if (oppPctgSp-oppPctgS) > 1:			#If we did damage, update the last damaging action.
 				lastDamagingAction = action
 				lastDamagingBetaS  = betaCur
 				lastDamagingBetaSp = betaNext
@@ -77,9 +81,8 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 			if (oppStockSp<oppStockS):
 				gotKill = 1
 
-			#If we got a kill, update the theta weights for the last damaging action and the kill reward
+			#If we got a kill, assign kill reward to the last damaging action.
 			if gotKill:
-				killReward = 100
 				term2 = np.zeros(numActions)
 				for maxa in range(0,numActions):
 					term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],lastDamagingBetaSp)
@@ -90,27 +93,22 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 			actionHistory.pop()
 			betaHistoryS.pop()
 			betaHistorySp.pop()
-
 			actionHistory.insert(0,action)
 			betaHistoryS.insert(0,betaCur)
 			betaHistorySp.insert(0,betaNext)
-
-			#Assign rewards / penalites to action history for kill / death
+			#Assign penalties to the action history that lead to a death.
 			if died:
-				deathReward = -10
 				for indAOld,actionOld in enumerate(actionHistory):	
-					
 					betaCurDied  = betaHistoryS[indAOld]
 					betaNextDied = betaHistorySp[indAOld]
+
+					if  (type(betaCurDied) is np.ndarray) and (type(betaNextDied) is np.ndarray): #Catch edge case of dying before list populated
+						term2 = np.zeros(numActions)
+						for maxa in range(0,numActions):
+							term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNextDied)
+
+						theta[actionOld*betaLen:(actionOld+1)*betaLen] += alpha*(deathReward + gamma*max(term2) - np.dot(theta[actionOld*betaLen:(actionOld+1)*betaLen],betaCurDied))*betaCurDied
 					
-					term2 = np.zeros(numActions)
-					for maxa in range(0,numActions):
-						term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNextDied)
-
-					theta[actionOld*betaLen:(actionOld+1)*betaLen] += alpha*(deathReward + gamma*max(term2) - np.dot(theta[actionOld*betaLen:(actionOld+1)*betaLen],betaCurDied))*betaCurDied
-				
-
-
 	return theta
 
 #If running from command line!
@@ -153,7 +151,6 @@ def main():
 	data = df.values
 
 	betaLen = len(beta(data[0,:]))
-	betaLen = int(len(theta)/numActions)
 
 	# create new theta or grab from previous theta
 	if config['BatchLearn']['thetaPrior'] == 'none':

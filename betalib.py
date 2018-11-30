@@ -86,18 +86,19 @@ def fighter(stateVal):
 	#params
 	stageWidth = 85
 	stageHeight = 100
-	sigmaPos = 5
-	sigmaRel = 1
+	sigmaPos = 3
+	sigmaRel = .5
 
 	pctgMax = 200
 	sigmaPctg = 10
 
 	#Positional basis functions
-	aXBasis = scipy.stats.norm.pdf(aX,np.linspace(-stageWidth-40,stageWidth+40,126),sigmaPos)
+	aXBasis = scipy.stats.norm.pdf(aX,np.linspace(-stageWidth-40,stageWidth+40,251),sigmaPos)
 	aYBasis = scipy.stats.norm.pdf(aX,np.linspace(-20,stageHeight,61),sigmaPos)
 
-	relXBasis = scipy.stats.norm.pdf(aX - oX, np.linspace(-stageWidth*2,stageWidth*2,171),sigmaPos)
-	relYBasis = scipy.stats.norm.pdf(aY - oY, np.linspace(-stageHeight-20,stageHeight+20,121),sigmaPos)
+	#Relative positon basis functions -> make very tight so the guy can extrapolate better
+	relXBasis = scipy.stats.norm.pdf(aX - oX, np.linspace(-stageWidth*2,stageWidth*2,500)    ,sigmaPos)
+	relYBasis = scipy.stats.norm.pdf(aY - oY, np.linspace(-stageHeight-20,stageHeight+20,500),sigmaPos)
 
 	#Facing basis
 	facingBasis = np.zeros(4)
@@ -111,7 +112,7 @@ def fighter(stateVal):
 	if (oAnimVal < 400) and (oAnimVal >= 0):
 		animBasis[oAnimVal+400] = 1
 
-	#Percentage
+	#Percentage basis functions
 	aPctgBasis = scipy.stats.norm.pdf(aPercent,np.linspace(0,pctgMax,41),sigmaPctg)
 	oPctgBasis = scipy.stats.norm.pdf(oPercent,np.linspace(0,pctgMax,41),sigmaPctg)
 

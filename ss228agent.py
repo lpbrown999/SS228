@@ -53,8 +53,10 @@ class SS228agent():
 
 		#Shape of ndarray of action matrix that we use to map linear indexes of actions to
 		self.numStickVals = len(self.stickVals)
-		self.actionsShape = (6,self.numStickVals,self.numStickVals)
+		self.actionsShape = (7,self.numStickVals,self.numStickVals)
 		self.numActions = np.prod(self.actionsShape)
+
+		self.emptyActionIdx = 58
 
 		#Exploration
 		self.explStrat = explStrat
@@ -71,7 +73,6 @@ class SS228agent():
 		# obtain button press vector from our action number
 		buttonPressVec = self.action_to_controller(actionNumber)
 
-		
 		#Tilt the sticks
 		mx = buttonPressVec[1]
 		my = buttonPressVec[2]    
@@ -81,31 +82,39 @@ class SS228agent():
 		#If statements to handle the abxLz or nothing to press
 		skipList = self.buttonSkipList.copy()
 
+		#SHORT HOP X PRESS
 		if buttonPressVec[0] == 0:
 			self.controller.press_button(Button.BUTTON_X)
 			skipList.append(Button.BUTTON_X)
+			#Since we are asked to do a short hop, we need to release the controller sooner.
+			#Falcons jump squat is 4 frames, have it release in 3 frames to get a short hop.
+			self.framesSinceInput = self.framesBetweenInputs - 3
+
+		#FULL HOP X PRESS
+		if buttonPressVec[0] == 1:
+			self.controller.press_button(Button.BUTTON_X)
+			skipList.append(Button.BUTTON_X)
 		
-		elif buttonPressVec[0] == 1:
+		elif buttonPressVec[0] == 2:
 			self.controller.press_button(Button.BUTTON_A)
 			skipList.append(Button.BUTTON_A)
 		
-		elif buttonPressVec[0] == 2:
+		elif buttonPressVec[0] == 3:
 			self.controller.press_button(Button.BUTTON_B)
 			skipList.append(Button.BUTTON_B)
 
-		elif buttonPressVec[0] == 3:
+		elif buttonPressVec[0] == 4:
 			self.controller.press_button(Button.BUTTON_Z)
 			skipList.append(Button.BUTTON_Z)
 
 		#Separate if block for L since we need to press 0 not release
-		if buttonPressVec[0] == 4:
+		if buttonPressVec[0] == 5:
 			self.controller.press_shoulder(Button.BUTTON_L, 1)
 			skipList.append(Button.BUTTON_L)
 		else:
 			self.controller.press_shoulder(Button.BUTTON_L, 0)
 
-		#If buttonPressVec[0] == 5, no button will be pressed
-
+		#If buttonPressVec[0] == 6, no button will be pressed
 		#Release unpressed buttons
 		for item in Button:          
 			if item in skipList:
@@ -130,20 +139,22 @@ class SS228agent():
 			
 			elif self.style == 'random':
 				actionIdx= random.randrange(0,self.numActions-1)
+			
 			elif self.style == 'empty':
-				actionIdx = 49
+				actionIdx = self.emptyActionIdx
+			
 			else:
-				actionIdx = 49
+				actionIdx = self.emptyActionIdx
 
 			#Execute action, reset counter, record action
-			self.simple_button_press(actionIdx)
 			self.framesSinceInput = 0
+			self.simple_button_press(actionIdx)
 			self.lastAction = actionIdx
 		
 		#Send an empty input on the frame before we do another input
 		elif (self.framesSinceInput == self.framesBetweenInputs - 1):
-			self.simple_button_press(49)
 			self.framesSinceInput += 1
+			self.simple_button_press(self.emptyActionIdx)
 
 		else:
 			self.framesSinceInput += 1
@@ -201,6 +212,15 @@ class SS228agent():
 		df = pd.read_csv(self.tempLogFile, header=None)
 		df.to_csv(self.logFile, mode='a', header=False, index = False)
 		os.remove(self.tempLogFile)
+
+	# def record_win_loss(self):
+
+	# 	#NEEDs some thought, not super easy. 
+	# 	agent_stocks = np.array(self.selfState.tolist())[3]
+	# 	opponent_stocks = np.array(self.oppState.tolist())[3]
+	# 	if agent_stocks == 0:
+	# 		pass
+
 
 	def update_theta_weights_learning(self,newThetaFile):
 		#Compute new theta using global approximation q learning from batchlearning.py. Using the templog.
