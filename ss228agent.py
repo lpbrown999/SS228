@@ -26,6 +26,7 @@ class SS228agent():
 		self.logFile = logFile
 		self.tempLogFile = tempLogFile
 		self.logArray = np.array([])
+		self.logNow = False
 
 		#Playstyle, beta function
 		self.style = style
@@ -133,7 +134,7 @@ class SS228agent():
 				potentialActionValues = np.zeros(self.numActions)
 				for potentialAction in range(0,self.numActions):
 					potentialActionValues[potentialAction] = np.dot(self.thetaWeights[potentialAction*self.betaLen:(potentialAction+1)*self.betaLen],betaCurr)
-
+				
 				#Choose an action based on exploration strategy
 				actionIdx = self.select_action(potentialActionValues)
 			
@@ -148,9 +149,10 @@ class SS228agent():
 
 			#Execute action, reset counter, record action
 			self.framesSinceInput = 0
-			self.simple_button_press(actionIdx)
+			self.simple_button_press(actionIdx)			#Can override framesSinceInput for short hops
 			self.lastAction = actionIdx
-		
+			self.logNow = True
+			
 		#Send an empty input on the frame before we do another input
 		elif (self.framesSinceInput == self.framesBetweenInputs - 1):
 			self.framesSinceInput += 1
@@ -183,7 +185,7 @@ class SS228agent():
 	def state_action_logger(self):
 		#Update -> only log on the frames we take an action
 		#Logs to a temp file, will get concatenated to the main log at every post game match score.
-		if self.framesSinceInput == 0:
+		if self.logNow:
 			combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
 			if np.size(self.logArray,axis=0) == self.inputsBetweenCsvLog:
 				df = pd.DataFrame(self.logArray)
@@ -193,19 +195,21 @@ class SS228agent():
 				self.logArray = combined_state_action
 			else:
 				self.logArray = np.vstack((self.logArray, combined_state_action))
+				
+			self.logNow = False
 
-	def state_evolution_action_logger(self):
-		#Update -> log every frame so we can see the evolution of the state after an action
-		#Logs to a temp file, will get concatenated to the main log at every post game match score.
-		combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
-		if np.size(self.logArray,axis=0) == self.inputsBetweenCsvLog:
-			df = pd.DataFrame(self.logArray)
-			df.to_csv(self.tempLogFile, mode='a', header=False, index = False)
-			self.logArray = combined_state_action
-		elif np.size(self.logArray) == 0:
-			self.logArray = combined_state_action
-		else:
-			self.logArray = np.vstack((self.logArray, combined_state_action))
+	# def state_evolution_action_logger(self):
+	# 	#Update -> log every frame so we can see the evolution of the state after an action
+	# 	#Logs to a temp file, will get concatenated to the main log at every post game match score.
+	# 	combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
+	# 	if np.size(self.logArray,axis=0) == self.inputsBetweenCsvLog:
+	# 		df = pd.DataFrame(self.logArray)
+	# 		df.to_csv(self.tempLogFile, mode='a', header=False, index = False)
+	# 		self.logArray = combined_state_action
+	# 	elif np.size(self.logArray) == 0:
+	# 		self.logArray = combined_state_action
+	# 	else:
+	# 		self.logArray = np.vstack((self.logArray, combined_state_action))
 
 	def templog_to_mainlog(self):
 		#The state action logger logs to a temp file. This gets called to remove the temp file.

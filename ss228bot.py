@@ -143,7 +143,6 @@ while True:
 		if agent1:
 			agent1.act()
 			agent1.state_action_logger()
-			#X,y,offstage of opponenet
 		if agent2:
 			agent2.act()
 			agent2.state_action_logger()

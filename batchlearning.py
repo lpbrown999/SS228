@@ -15,14 +15,14 @@ from rewardlib import rewardDict
 def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations, numActions, betaLen):
 	
 	killReward = 100	#Assigned to last damaging action before kill
-	deathReward = -10	#Assigned to all actions in sequence of actions that caued death.
+	deathReward = -20	#Assigned to all actions in sequence of actions that caued death.
 
 	#Incase not(inSameAnimSequence) does not go off on first run through.
 	action = 0
 	betaCur = beta(data[0,:])
 
 	#For assigning rewards to kills
-	lastDamagingAction = 0
+	lastDamagingAction = None
 	lastDamagingBetaS = beta(data[0,:])
 	lastDamagingBetaSp = beta(data[0,:])
 
@@ -81,8 +81,8 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 			if (oppStockSp<oppStockS):
 				gotKill = 1
 
-			#If we got a kill, assign kill reward to the last damaging action.
-			if gotKill:
+			#If we got a kill and have dealt damage, assign kill reward to the last damaging action.
+			if gotKill and (lastDamagingAction != None):
 				term2 = np.zeros(numActions)
 				for maxa in range(0,numActions):
 					term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],lastDamagingBetaSp)
@@ -96,6 +96,7 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 			actionHistory.insert(0,action)
 			betaHistoryS.insert(0,betaCur)
 			betaHistorySp.insert(0,betaNext)
+
 			#Assign penalties to the action history that lead to a death.
 			if died:
 				for indAOld,actionOld in enumerate(actionHistory):	
@@ -103,12 +104,12 @@ def Q_learning_global_approx(data, theta, beta, reward, alpha, gamma, iterations
 					betaNextDied = betaHistorySp[indAOld]
 
 					if  (type(betaCurDied) is np.ndarray) and (type(betaNextDied) is np.ndarray): #Catch edge case of dying before list populated
+						
 						term2 = np.zeros(numActions)
 						for maxa in range(0,numActions):
 							term2[maxa] = np.dot(theta[maxa*betaLen:(maxa+1)*betaLen],betaNextDied)
-
 						theta[actionOld*betaLen:(actionOld+1)*betaLen] += alpha*(deathReward + gamma*max(term2) - np.dot(theta[actionOld*betaLen:(actionOld+1)*betaLen],betaCurDied))*betaCurDied
-					
+
 	return theta
 
 #If running from command line!
