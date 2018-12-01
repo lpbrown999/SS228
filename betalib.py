@@ -93,8 +93,15 @@ def fighter(stateVal):
 	sigmaPctg = 10
 
 	#Positional basis functions
-	aXBasis = scipy.stats.norm.pdf(aX,np.linspace(-stageWidth-40,stageWidth+40,251),sigmaPos)
-	aYBasis = scipy.stats.norm.pdf(aX,np.linspace(-20,stageHeight,61),sigmaPos)
+	# Different x basis for if weighe are on or off stage:
+	if aX <= -85.56 or (aY <= -6 and aX < -70):					#LEFT OFF STAGE
+		aXBasis = scipy.stats.norm.pdf(aX,np.linspace(-150,-80,251),sigmaPos)
+	elif aX >= 85.56 or (aY <= -6 and aX > 70):					#RIGHT OFF STAGE
+		aXBasis = scipy.stats.norm.pdf(aX,np.linspace(80,150,251),sigmaPos)
+	else:
+		aXBasis = scipy.stats.norm.pdf(aX,np.linspace(-stageWidth-5,stageWidth+5,251),sigmaPos)
+
+	aYBasis = scipy.stats.norm.pdf(aY,np.linspace(-20,stageHeight,61),sigmaPos)
 
 	#Relative positon basis functions -> make very tight so the guy can extrapolate better
 	relXBasis = scipy.stats.norm.pdf(aX - oX, np.linspace(-stageWidth*2,stageWidth*2,500)    ,sigmaPos)
@@ -121,13 +128,19 @@ def fighter(stateVal):
 	jumpLeftBasis[aJumpLeft] = 1
 	jumpLeftBasis[oJumpLeft+3] = 1
 
-	#Offstage
-	offStageBasis = np.zeros(4)
-	offStageBasis[aOffStage] = 1
-	offStageBasis[oOffStage+2] = 1
-
 	#Assemble all basis functions
-	beta = np.concatenate((aXBasis,aYBasis,relXBasis,relYBasis,facingBasis,animBasis,aPctgBasis,oPctgBasis,jumpLeftBasis,offStageBasis))
+	betaVec = np.concatenate((aXBasis,aYBasis,relXBasis,relYBasis,facingBasis,animBasis,aPctgBasis,oPctgBasis,jumpLeftBasis))
+
+	#PAD beta for different "modes"
+	betaPadder = np.zeros(betaVec.size)
+
+	if aX <= -85:					#LEFT OFF STAGE
+		beta = np.concatenate((betaVec,betaPadder,betaPadder))
+	elif aX >= 85:					#RIGHT OFF STAGE
+		beta = np.concatenate((betaPadder,betaPadder,betaVec))
+	else:
+		beta = np.concatenate((betaPadder,betaVec,betaPadder))
+
 	return beta
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 

@@ -81,14 +81,22 @@ def fighter_reward(curData):
 	aDelPctg = aPctgSp - aPctgS
 	oDelPctg = oPctgSp - oPctgS
 
+
+	#On stage
+	aOffStageS = int(s[15])
+	aOffStageSp= int(sp[15])
+
+
 	#Assign reward for doing damage -> ignore doing or taking 1 damge for hoop damage.
 	if oDelPctg > 1:
 		reward += oDelPctg*np.exp(-0.01*oPctgS)
-		didDamage = 1
 
 	#Penalty for taking damage -> no multiplyer
 	if aDelPctg > 1:
 		reward -= aDelPctg*np.exp(-0.01*aPctgS)
+
+	if aOffStageS and not(aOffStageSp):
+		reward += 5
 
 	return reward
 
