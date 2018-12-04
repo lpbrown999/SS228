@@ -1,3 +1,23 @@
 \section{Applications to Super Smash Bros Melee}
+- state evolver / intractible state space / discretized controller
+\subsection{Discretized actions}
+The controller for the nintendo game cube can be thought of as a continuous action space for Super Smash Brothers Melee. There are two analog control sticks which can be placed at any value from -1 to 1 in both the x and y direction, two analog shoulder buttons which are functionally identical and range from 0 to 1, as well as four digital face buttons. 
 
-We define a set of basis functions that span the state space based and a reward function based on what is important to the agent. 
+To reduce the number of potential actions, repetitive buttons were discarded the analog inputs were discretized. The result is the following set of potential inputs:
+
+\subsection{Basis Functions}
+Since our project is based on perceptron Q-learning 
+
+\subsection{Reward Functions}
+
+In order to apply perceptron Q-learning to to SSBM, a set of reward and basis functions had to be defined. As described in the introduction, the goal of the game is to ultimately knock your opponent off the stage, which is increasingly possible as their damage goes up since the damage causes them to fly further. This indicates a careful balance between accumulating damage to facilitate a knock out move, and overly focusing on accumulating damage with no regard for the ultimate goal of getting a knock out. To tackle this, we defined the reward function between states to include a decay for damage dealt when the opponent is already at higher percentages, as well as a penalty for taking damage. In order to prevent suicidal behavior of the agent, a reward was also given when the agent managed to move from being off of the side of the stage in state s, to on the stage in state $s'$
+
+Denoting the opponents damage as $d_o$, the agents damage as $d_a$, and the on stage parameter of the agent as a true / false flag $ON$, the reward function became:
+
+$$R = (d'_o-d_o)exp(-.01*d_o) - (d'_a-d_a)exp(-.01*d_a) + \delta_{0,ON}\delta_{1,ON'}$$
+
+In addition to this reward given out at each state transition step, a novel method for assigning rewards to significant important states was formulated. To assign rewards to killing the opponent, the last action the agent took that resulted in an increase in damage to the opponent is recorded. When the opponent dies, a large reward is assigned to this "last damaging action". This is due to the long lag between hitting the opponent and them dying, and the necessity of avoiding assigning large rewards to actions that had nothing to do with the opponnent dying. 
+
+Additionally, a finite length action history is tracked for the purposes of assigning negative rewards to deaths. When the agent dies, all actions in the action history are penalized, as the agent could have taken an action in this time frame that may have prevented its death but ultimately chose not to. An example of this is the agent being slightly off the edge of the stage and not choosing to jump back on. The action selected instead of jumping back on is then penalized.
+
+
