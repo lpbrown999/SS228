@@ -1,0 +1,91 @@
+\documentclass[journal]{new-aiaa}
+%\documentclass[conf]{new-aiaa} for conference papers
+\usepackage[utf8]{inputenc}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[version=4]{mhchem}
+\usepackage{siunitx}
+\usepackage{longtable,tabularx}
+\setlength\LTleft{0pt} 
+
+\title{Preparation of Papers for AIAA Technical Journals}
+
+\author{Liam Brown \footnote{Graduate Student, Aeronautics and Astronautics.} and Jeremy Crowley\footnote{Graduate Student, Aeronautics and Astronautics.}}
+\affil{Stanford Universiry, Stanford, CA, 94305}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+In this paper, we discuss a reinforcement learning strategy for the video game Super Smash Bros Melee. 
+\end{abstract}
+
+\section*{Nomenclature}
+
+{\renewcommand\arraystretch{1.0}
+\noindent\begin{longtable*}{@{}l @{\quad=\quad} l@{}}
+$\beta$  & basis function for global approximation \\
+$a$ &    cylinder diameter \\
+\end{longtable*}}
+
+
+%
+% Introduction
+%
+\input{Introduction.tex}
+
+
+%
+% Problem Statement
+%
+\input{ProblemStatement.tex}
+
+
+%
+% Applications to Super Smash Bros Melee
+%
+\input{Applications.tex}
+
+
+%
+% Results
+%
+\input{Results.tex}
+
+
+%
+% Conclusion
+%
+\input{Conclusion}
+
+
+%
+% Appendix
+%
+\section*{Appendix}
+
+An Appendix, if needed, appears \textbf{before} research funding information and other acknowledgments.
+
+
+%
+% Funding Sources
+%
+\section*{Funding Sources}
+
+We would like to thank mom and dad.
+
+
+%
+% Acknowledgments
+%
+\section*{Acknowledgments}
+
+We would like to acknowledge libmelee for providing an open source solution to obtaining information about the game while it is being played.
+
+
+\bibliography{sample}
+
+\end{document}
