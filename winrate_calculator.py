@@ -4,7 +4,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 def main():
-	logs = ['logs/Agent1Logs/overnightFriday.csv', 'logs/Agent1Logs/daySaturday.csv']
+	logs = ['logs/Agent1Logs/overnightFriday.csv', 'logs/Agent1Logs/daySaturday.csv',
+			'logs/Agent1Logs/nightSunday.csv','logs/Agent1Logs/dayMonday.csv']
 	fig1, ax1 = plt.subplots()
 
 	for log in logs:
@@ -36,6 +37,7 @@ def main():
 			
 			#Want first occurance of 0 stocks in the data, if at this point agent has 0 stocks it was a loss.
 			idx0 = min(aidx0,oidx0)
+			print(aStock[idx0],oStock[idx0])
 			if aStock[idx0] == 0:
 				winLoss.append(0)
 			else:
@@ -54,7 +56,7 @@ def main():
 			a4idx = a4idx[0]
 			aStock = aStock[a4idx:]
 			oStock = oStock[a4idx:]
-
+		input("")
 		ax1.plot( np.array(range(0,len(cumWinPctg))) , cumWinPctg, label = log)
 	ax1.legend()
 	ax1.grid()
