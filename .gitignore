@@ -1,2 +1,6 @@
 .DS_Store
 __pycache__
+main.aux
+main.out
+main.synctex.gz
+main.log
