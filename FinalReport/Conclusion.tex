@@ -1,1 +1,8 @@
 \section{Conclusion}
+
+Perceptron Q-learning for Super Smash Brothers Melee was fairly successful. Given enough time, the agent learned to progressively beat default CPUs, die less, and take less damage. Agents with low exploration parameters achieved a 100 percent win-rate. One severely limiting factor of the project was the need to run the agent in real time against a CPU in order to train. This caused iteration on the basis functions, reward functions, hyper parameters as well as progression through CPU difficulty to be slow. On the other hand, the combination of our achieved performance and low iterations on parameters and functions shows the robustness of perceptron Q-learning in this environment.
+
+We believe that with improvement to the reward functions and careful detail to to hyper parameters, as well as more time, the agent could learn to beat significantly higher level CPUs than demonstrated here. Additionally, while the agent has only ever played as captain falcon against captain falcon, none of the work in the project is specific to this character and so the agent should be able to learn to play any matchup. This could be done by storing different basis function weights for each character matchup.
+
+Our group plans to continue the project by both continuing to play against higher level agents with the existing Perceptron Q-learning approach, as well as extending the bots capabilities by implementing DQN. We believe DQN will provide a higher level of performance as it is able to represent non-linear basis functions, while perceptron Q-learning is limited to linear relationships.
+

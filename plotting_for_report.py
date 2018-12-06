@@ -141,19 +141,23 @@ def main():
 		ax1.plot(gameArray, runWinPctg, label = logLabels[indL])
 		ax2.plot(gameArray, runDiffDamageTaken, label = logLabels[indL])
 		ax3.plot(gameArray, runDiffStocks, label=logLabels[indL])
-	ax1.set(xlabel = 'Games Played', ylabel = 'Win Percentage', xlim =(0,max(gameLims)), ylim = (0,1.05) )
+		
+	ax1.set(xlabel = 'Games played', ylabel = 'Win percentage', xlim =(0,max(gameLims)+N), ylim = (0,1.05) )
 	ax1.legend()
 	ax1.grid()
+	fig1.savefig("winpctg.png", dpi = 300)
 
 	ax2.legend()
 	ax2.grid()
-	ax2.set(xlabel = 'Games Played', ylabel = 'damage?', xlim =(0,max(gameLims)))
-	
+	ax2.set(xlabel = 'Games played', ylabel = 'Damage differential', xlim =(0,max(gameLims)+N))
+	fig2.savefig("damage.png", dpi = 300)
+
 	ax3.legend()
 	ax3.grid()
-	ax3.set(xlabel = 'Games Played', ylabel = 'stocks', xlim =(0,max(gameLims)))
+	ax3.set(xlabel = 'Games Played', ylabel = 'Stock differential', xlim =(0,max(gameLims)+N))
+	fig3.savefig("stocks.png", dpi = 300)
 
-	plt.show()
+	#plt.show()
 
 def running_mean(x, N):
     cumsum = np.cumsum(np.insert(x, 0, 0)) 
