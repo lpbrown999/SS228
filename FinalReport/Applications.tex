@@ -19,9 +19,7 @@ As our project is based on, perceptron Q-learning we designed a set of basis fun
 \item A set of flags for the number of jumps left
 \end{itemize}
 
-One initial issue with global approximation of state action values was the discrete difference in optimality between two very similar states. The most relevant example for us was the case in which the agent was standing on the edge of the stage and the optimal action being to attack the opponent, where as if the agent was every so slightly to the left then the optimal action would be to jump back to the stage, not issue an attack command. 
-
-To deal with this and prevent generalization from nearby but dissimilar states, we employed a novel strategy of activating different action weights depending on three discrete super states, where the optimal action may be very different from nearby states in a different super-state. The super-states are defined as being off of the stage to the left, on the stage, and off of the stage to the right. To accomplish this, a padded beta vector is created $\beta_{p} = [\beta,~0_{|\beta|},~0_{|\beta|}]$, where $0_{|\beta|}$ denotes a vector of $|\beta|$ zeros. The base $\beta$ function is then inserted to the appropriate super-index of the padded basis function. The result is a training of different perceptron weights in different super-states for each map partition, and a prevention of generalizing between states that should not be generalized between.
+Additionally, the state space is discretized into three "super-states", being off the stage to the left, on the stage, and off the stage to the right. A zero padded vector $\beta_{p} = [\beta,~0_{|\beta|},~0_{|\beta|}]$ is then created, and the base $\beta$ function is inserted to the appropriate super-state index. The need and  justification for this technique is discussed in the novel approaches section.
 
 \subsection{Reward Functions}
 
