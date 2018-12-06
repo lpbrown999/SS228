@@ -6,11 +6,13 @@ import matplotlib.pyplot as plt
 def main():
 	logs = ['logs/Agent1Logs/noPriorLam50Lvl1.csv',
 			'logs/Agent1logs/lvl1Lam50PriorLam200Lvl1.csv',
-			'logs/Agent1Logs/nightMondayLVL3.csv']
+			'logs/Agent1Logs/nightMondayLVL3.csv',
+			'logs/Agent1logs/LVL4.csv']
 	logLabels = ['$\lambda = 50$, No prior, Lvl1 opponent',
 				'$\lambda = 200$, Lvl1 prior, Lvl1 opponent',
-				'$\lambda = 200$, Lvl1 prior, Lvl3 opponent']
-	gameLims = [85,121,160]
+				'$\lambda = 200$, Lvl1 prior, Lvl3 opponent',
+				'$\lambda = 200$, Lvl3 prior, Lvl4 opponent']
+	gameLims = [85,121,160, 99]
 	N = 15
 
 	gameShift = 0
