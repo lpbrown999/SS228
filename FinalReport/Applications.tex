@@ -1,16 +1,31 @@
 \section{Applications to Super Smash Bros Melee}
-- state evolver / intractible state space / discretized controller
-\subsection{Discretized actions}
-The controller for the nintendo game cube can be thought of as a continuous action space for Super Smash Brothers Melee. There are two analog control sticks which can be placed at any value from -1 to 1 in both the x and y direction, two analog shoulder buttons which are functionally identical and range from 0 to 1, as well as four digital face buttons. 
+- state evolver / intractable state space / discretized controller
 
-To reduce the number of potential actions, repetitive buttons were discarded the analog inputs were discretized. The result is the following set of potential inputs:
+\subsection{Discretized actions}
+The controller for the Nintendo game cube can be thought of as a continuous action space for Super Smash Brothers Melee. There are two analog control sticks which can be placed at any value from -1 to 1 in both the x and y direction, two analog shoulder buttons which are functionally identical and range from 0 to 1, as well as four digital face buttons. 
+
+To reduce the number of potential actions, repetitive combinations of buttons were discarded and the analog inputs were discretized. We represented five buttons ($A$,$B$,$X$,$L$, and $Z$) as binary variables, where a value of one maps to pressed and zero maps to not pressed, and the analog stick as a variable with three possible values for both the x direction, $N^{x}$, and the y direction, $N^{y}$. We also include a "short hop" button press, $X_{s}$, where X is pressed for a shorter amount of time, and a "none" button press, $\varnothing$, where none of the buttons are pressed. 
+
+To create an action, we select a single button and a direction for the analog stick. Recall we have seven possible button presses ($A$,$B$,$X$,$X_{s}$,$L$,$Z$, $\varnothing$) and nine possible analog stick values. This results in an action space $\mathbb{A}$ with size 63.
+
 
 \subsection{Basis Functions}
-Since our project is based on perceptron Q-learning 
+Since our project is based on perceptron Q-learning we designed a set of basis functions to span the state space SSBM. Our beta vector, $\beta$, contains the following elements.
+
+\begin{itemize}
+\item A set of normal distributions along the x and y axes
+\item A set of normal distributions for the relative distance between the agent and the opponent
+\item A flag for the direction the agent is facing and a flag for the direction the opponent is facing
+\item A set of flags for the agent and a set of flags for the opponent to represent unique animations
+\item A set of normal distributions for the agent and opponents damages
+\item A set of flags for the number of jumps left
+\end{itemize}
+
+We employed an interesting strategy to have our agent behave differently when it is off the map (i.e. about to die and needs to perform a recovery move to get back on stage) versus when it is in the middle of the map. We split the map up into left, middle, and right. Instead of using the beta vector as constructed in the list above, we make a zero-padded version of the beta vector depending on where the agent is in the map. For example, if the agent is on the left side of the map we create a padded beta vector, $\beta_{p} = [\beta,~0_{|\beta|},~0_{|\beta|}]$, where $0_{|\beta|}$ denotes a vector of $|\beta|$ zeros. Similarly, when the agent is in the middle of the map our beta vector becomes $\beta_{p} = [0_{|\beta|},~\beta,~0_{|\beta|}]$ and when the agent is on the right side of the map our beta vector becomes $\beta_{p} = [0_{|\beta|},~0_{|\beta|},~\beta]$. This effectively results in differently trained perception weights, $\Theta$, for the different map partitions.
 
 \subsection{Reward Functions}
 
-In order to apply perceptron Q-learning to to SSBM, a set of reward and basis functions had to be defined. As described in the introduction, the goal of the game is to ultimately knock your opponent off the stage, which is increasingly possible as their damage goes up since the damage causes them to fly further. This indicates a careful balance between accumulating damage to facilitate a knock out move, and overly focusing on accumulating damage with no regard for the ultimate goal of getting a knock out. To tackle this, we defined the reward function between states to include a decay for damage dealt when the opponent is already at higher percentages, as well as a penalty for taking damage. In order to prevent suicidal behavior of the agent, a reward was also given when the agent managed to move from being off of the side of the stage in state s, to on the stage in state $s'$
+In order to apply perceptron Q-learning to to SSBM, we defined a reward function and a set of basis functions. As described in the introduction, the goal of the game is to ultimately knock your opponent off the stage, which becomes easier as their damage increases since the damage causes them to fly further. This indicates a careful balance between accumulating damage to facilitate a knock out move, and overly focusing on accumulating damage with no regard for the ultimate goal of getting a knock out. To tackle this, we defined the reward function between states to include a decay for damage dealt when the opponent is already at higher percentages, as well as a penalty for taking damage. In order to prevent suicidal behavior of the agent, a reward was also given when the agent managed to move from being off of the side of the stage in state s, to on the stage in state $s'$
 
 Denoting the opponents damage as $d_o$, the agents damage as $d_a$, and the on stage parameter of the agent as a true / false flag $ON$, the reward function became:
 
