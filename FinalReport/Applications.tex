@@ -1,16 +1,14 @@
 \section{Applications to Super Smash Bros Melee}
-- state evolver / intractable state space / discretized controller
 
 \subsection{Discretized actions}
 The controller for the Nintendo game cube can be thought of as a continuous action space for Super Smash Brothers Melee. There are two analog control sticks which can be placed at any value from -1 to 1 in both the x and y direction, two analog shoulder buttons which are functionally identical and range from 0 to 1, as well as four digital face buttons. 
 
 To reduce the number of potential actions, repetitive combinations of buttons were discarded and the analog inputs were discretized. We represented five buttons ($A$,$B$,$X$,$L$, and $Z$) as binary variables, where a value of one maps to pressed and zero maps to not pressed, and the analog stick as a variable with three possible values for both the x direction, $N^{x}$, and the y direction, $N^{y}$. We also include a "short hop" button press, $X_{s}$, where X is pressed for a shorter amount of time, and a "none" button press, $\varnothing$, where none of the buttons are pressed. 
 
-To create an action, we select a single button and a direction for the analog stick. Recall we have seven possible button presses ($A$,$B$,$X$,$X_{s}$,$L$,$Z$, $\varnothing$) and nine possible analog stick values. This results in an action space $\mathbb{A}$ with size 63.
-
+To create an action, we select a single button, an x direction for the analog stick, and a y direction for the analog stick. With seven possible button presses ($A$,$B$,$X$,$X_{s}$,$L$,$Z$, $\varnothing$) and three possible tilt angles in each stick direction, this results in an action space $\mathbb{A}$ 63 discrete actions.
 
 \subsection{Basis Functions}
-Since our project is based on perceptron Q-learning we designed a set of basis functions to span the state space SSBM. Our beta vector, $\beta$, contains the following elements.
+As our project is based on, perceptron Q-learning we designed a set of basis functions to span the state space in Super Smash Brothers Melee and allow for perceptron based approximation of state action values. Our beta function, $\beta$, contains the following elements.
 
 \begin{itemize}
 \item A set of normal distributions along the x and y axes
@@ -21,18 +19,22 @@ Since our project is based on perceptron Q-learning we designed a set of basis f
 \item A set of flags for the number of jumps left
 \end{itemize}
 
-We employed an interesting strategy to have our agent behave differently when it is off the map (i.e. about to die and needs to perform a recovery move to get back on stage) versus when it is in the middle of the map. We split the map up into left, middle, and right. Instead of using the beta vector as constructed in the list above, we make a zero-padded version of the beta vector depending on where the agent is in the map. For example, if the agent is on the left side of the map we create a padded beta vector, $\beta_{p} = [\beta,~0_{|\beta|},~0_{|\beta|}]$, where $0_{|\beta|}$ denotes a vector of $|\beta|$ zeros. Similarly, when the agent is in the middle of the map our beta vector becomes $\beta_{p} = [0_{|\beta|},~\beta,~0_{|\beta|}]$ and when the agent is on the right side of the map our beta vector becomes $\beta_{p} = [0_{|\beta|},~0_{|\beta|},~\beta]$. This effectively results in differently trained perception weights, $\Theta$, for the different map partitions.
+One initial issue with global approximation of state action values was the discrete difference in optimality between two very similar states. The most relevant example for us was the case in which the agent was standing on the edge of the stage and the optimal action being to attack the opponent, where as if the agent was every so slightly to the left then the optimal action would be to jump back to the stage, not issue an attack command. 
+
+To deal with this and prevent generalization from nearby but dissimilar states, we employed a novel strategy of activating different action weights depending on three discrete super states, where the optimal action may be very different from nearby states in a different super-state. The super-states are defined as being off of the stage to the left, on the stage, and off of the stage to the right. To accomplish this, a padded beta vector is created $\beta_{p} = [\beta,~0_{|\beta|},~0_{|\beta|}]$, where $0_{|\beta|}$ denotes a vector of $|\beta|$ zeros. The base $\beta$ function is then inserted to the appropriate super-index of the padded basis function. The result is a training of different perceptron weights in different super-states for each map partition, and a prevention of generalizing between states that should not be generalized between.
 
 \subsection{Reward Functions}
 
-In order to apply perceptron Q-learning to to SSBM, we defined a reward function and a set of basis functions. As described in the introduction, the goal of the game is to ultimately knock your opponent off the stage, which becomes easier as their damage increases since the damage causes them to fly further. This indicates a careful balance between accumulating damage to facilitate a knock out move, and overly focusing on accumulating damage with no regard for the ultimate goal of getting a knock out. To tackle this, we defined the reward function between states to include a decay for damage dealt when the opponent is already at higher percentages, as well as a penalty for taking damage. In order to prevent suicidal behavior of the agent, a reward was also given when the agent managed to move from being off of the side of the stage in state s, to on the stage in state $s'$
+In order to apply perceptron Q-learning to to SSBM, a reward function had to be defined. As described in the introduction, the goal of the game is to ultimately knock your opponent off the stage, which becomes easier as their damage increases since the damage causes them to fly further. This indicates a careful balance between accumulating damage to facilitate a knock out move, and overly focusing on accumulating damage with no regard for the ultimate goal of getting a knock out. To accomplish this, we defined the reward function to favor dealing damage to the opponent when they are at lower damage, decaying for damage dealt when the opponent is already at higher percentages. Additionally, the agent receives a penalty for taking damage in the same fashion as dealing damage. To prevent the agent from jumping off the stage and prematurely dying, a reward was also given when the agent managed to move from being off of the side of the stage in state s, to on the stage in state $s'$.
 
-Denoting the opponents damage as $d_o$, the agents damage as $d_a$, and the on stage parameter of the agent as a true / false flag $ON$, the reward function became:
+Denoting the opponents damage as $d_o$, the agents damage as $d_a$, and the on stage parameter of the agent as a true / false flag $ON$, the reward function becomes:
 
 $$R = (d'_o-d_o)exp(-.01*d_o) - (d'_a-d_a)exp(-.01*d_a) + \delta_{0,ON}\delta_{1,ON'}$$
 
-In addition to this reward given out at each state transition step, a novel method for assigning rewards to significant important states was formulated. To assign rewards to killing the opponent, the last action the agent took that resulted in an increase in damage to the opponent is recorded. When the opponent dies, a large reward is assigned to this "last damaging action". This is due to the long lag between hitting the opponent and them dying, and the necessity of avoiding assigning large rewards to actions that had nothing to do with the opponnent dying. 
+Dealing with rewards for kills and deaths was not straight forward due to the long lag period between an action that resulted in one of these events and the event. To assign rewards to killing the opponent, the last action the agent took that dealt damage is recorded as a "last damaging action". When the opponent dies, a large reward is assigned to this "last damaging action". This is due to the long lag between hitting the opponent and them dying, and the necessity of avoiding assigning large rewards to actions that had nothing to do with the opponent dying. 
 
-Additionally, a finite length action history is tracked for the purposes of assigning negative rewards to deaths. When the agent dies, all actions in the action history are penalized, as the agent could have taken an action in this time frame that may have prevented its death but ultimately chose not to. An example of this is the agent being slightly off the edge of the stage and not choosing to jump back on. The action selected instead of jumping back on is then penalized.
+INSERT JEREMY FIG HERE FOR REWARDS
+
+Lastly, a finite length action history is tracked for the purposes of assigning negative rewards to deaths. When the agent dies, all actions in the action history are penalized, as the agent could have taken an action in this time frame that may have prevented its death but ultimately chose not to.An example of this is the agent being slightly off the edge of the stage and not choosing to jump back on. The action selected instead of jumping back on is then penalized.
 
 
