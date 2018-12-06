@@ -15,10 +15,10 @@ Another issue to be addressed was the impact of ”action-lockout”, in which a
 
 \subsection{Action Impact Delay}
 
-Dealing with rewards for kills and deaths was not straight forward due to the long lag period between an action that resulted in one of these events and the event occurring. To assign rewards to killing the opponent, the last action the agent took that dealt damage is recorded as a "last damaging action". When the opponent dies, a large reward is assigned to this "last damaging action". This is necessary to avoid assigning large rewards to actions that are irrelevant to the result of the opponent dying.
+Dealing with rewards for kills and deaths was not straight forward due to the long lag period between an action that resulted in one of these events and the event occurring. To assign rewards to killing the opponent, the last action the agent took that dealt damage is recorded as a "last damaging action". When the opponent dies, a large reward is assigned to this "last damaging action". This is necessary to avoid assigning large rewards to actions that do not cause the opponent to die, and can be thought of as equivalent to knowing immediately after the action is taken if it will result in the death of the opponent.
 
 \subsection{State Evolution}
-
+In this game environment, states evolve at a slow rate relative to the ability to take actions. The game runs at 60 hz, and it is possible to take an action on every single frame. The downside to this 
 
 
 \begin{figure}[!htb]
