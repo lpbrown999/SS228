@@ -1,0 +1,52 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: main.aux
+The style file: new-aiaa.bst
+Illegal, another \bibstyle command---line 40 of file main.aux
+ : \bibstyle
+ :          {plain}
+I'm skipping whatever remains of this command
+Database file #1: biblio.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+You've used 1 entry,
+            3319 wiz_defined-function locations,
+            686 strings with 5707 characters,
+and the built_in function-call counts, 853 in all, are:
+= -- 61
+> -- 32
+< -- 3
++ -- 12
+- -- 11
+* -- 68
+:= -- 113
+add.period$ -- 3
+call.type$ -- 1
+change.case$ -- 4
+chr.to.int$ -- 2
+cite$ -- 1
+duplicate$ -- 70
+empty$ -- 61
+format.name$ -- 13
+if$ -- 174
+int.to.chr$ -- 1
+int.to.str$ -- 2
+missing$ -- 12
+newline$ -- 14
+num.names$ -- 3
+pop$ -- 21
+preamble$ -- 1
+purify$ -- 4
+quote$ -- 0
+skip$ -- 33
+stack$ -- 0
+substring$ -- 47
+swap$ -- 51
+text.length$ -- 3
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 6
+warning$ -- 0
+while$ -- 4
+width$ -- 0
+write$ -- 22
+(There was 1 error message)

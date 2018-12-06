@@ -1,0 +1,19 @@
+\begin{thebibliography}{1}
+\newcommand{\enquote}[1]{``#1''}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi:\discretionary{}{}{}#1}\else
+  \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
+  \urlstyle{rm}\Url}\fi
+
+\bibitem[{Emigh et~al.(2016)Emigh, Kriminger, Brockmeier, Principe, and
+  Pardalos}]{emigh}
+Emigh, M.~S., Kriminger, E.~G., Brockmeier, A.~J., Principe, J.~C., and
+  Pardalos, P.~M., \enquote{Reinforcement Learning in Video Games Using Nearest
+  Neighbor Interpolation and Metric Learning,} \emph{IEEE Transactions on
+  Computational Intelligence and AI in Games}, Vol.~8, No.~1, 2016, p. 56–66.
+\newblock \doi{10.1109/tciaig.2014.2369345}.
+
+\end{thebibliography}
