@@ -12,9 +12,13 @@ RL has recently become a topic of interest due to its ability to solve problems 
 
 Model-free learning can be applied online (updating the Q values after each action) or applied as an offline strategy using batch learning (gathering data for a fixed period of time and updating the Q values). Online implementations require the runtime of the update equation to not interfere with the agents ability to perform an action at the next available time step. Batch learning, is a simple yet effective method to apply reinforcement learning to an agent in a time critical scenario. 
 
-Super Smash Bros Melee presents an environment with dynamics that are difficult to model without knowledge of the underlying engine used to build the game. In addition to complex dynamics, the game has a state space that would be infeasible to represent as discrete values. A model-free approach eliminates the need for a state transition model and generalization allows the agent to approximate the optimal policy given limit data. Given the nature of the problem we would like to solve, we chose to implement a perceptron Q-learning algorithm.
+Super Smash Bros Melee presents an environment with dynamics that are difficult to model without knowledge of the underlying engine used to build the game. In addition to complex dynamics, the game has a state space that would be infeasible to represent as discrete values. A model-free approach eliminates the need for a state transition model and generalization allows the agent to approximate the optimal policy given limit data. Given the nature of the problem we would like to solve, we chose to implement a perceptron Q-learning algorithm. In this algorithm, a set of weights for each action $\theta_a$ is trained on a basis function $\beta(s)$, such that the state-action value can be globally approximated as $Q(s,a) = \theta^T_a\beta(s)$.
 
-We define the action space as $\mathbb{A}$ and the state space as $\mathbb{S}$. The action space contains a set of actions that are mapped to a combination of buttons being pressed on a gamecube controller. The state space contains a set of continuous and discrete variables that represent the agent in the environment.
+\begin{equation}
+	\theta_a \leftarrow \theta_a+\alpha(r + \gamma \max_{a'} \theta_{a'}^T\beta(s',a') -  \theta_{a}^T\beta(s,a))\beta(s,a)
+\end{equation}
+
+We define the action space as $\mathbb{A}$ and the state space as $\mathbb{S}$. The action space contains a set of actions that are mapped to a combination of buttons being pressed on a gamecube controller. The state space contains a set of continuous and discrete variables that represent the agent and its opponent in the environment.
 
 
 
