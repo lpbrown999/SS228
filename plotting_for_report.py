@@ -30,13 +30,13 @@ def main():
 		winLoss = []				#1 for win, 0 for loss
 		cumWinPctg = []				#Cumulative win percentage - mean up to current game
 
-		agentTotalDamage = []		#Damage taken in each game
-		opponentTotalDamage = []	#Damage dealt in each game
+		agentDamageTaken = []		#Damage taken in each game
+		opponentDamageTaken = []	#Damage dealt in each game
 		cumADamage = []				#Mean up to current game
 		cumODamage = []
 
-		agentEndGameStocks = []		#Num stocks left for agent at end of each game
-		opponentEndGameStocks = []	#Num stocks left for opponent at end of each game
+		agentEndgameStocks = []		#Num stocks left for agent at end of each game
+		opponentEndgameStocks = []	#Num stocks left for opponent at end of each game
 
 		gameCounter = 0
 		while True:
@@ -78,32 +78,32 @@ def main():
 			aDamageSubset = aDamage[startGameIdx:endGameIdx+1]
 			oDamageSubset = oDamage[startGameIdx:endGameIdx+1]
 
-			agentEndGameStocks.append(aStockSubset[-1])
-			opponentEndGameStocks.append(oStockSubset[-1])
+			agentEndgameStocks.append(aStockSubset[-1])
+			opponentEndgameStocks.append(oStockSubset[-1])
 
 			#Agent total damage
-			agentTotalDamage.append(0)
+			agentDamageTaken.append(0)
 			for stock in range(3,-1,-1):
 				agentNewLifeIdx = np.where(aStockSubset==stock)[0]
 				
 				if agentNewLifeIdx.size == 0:						#No more deaths
-					agentTotalDamage[-1] += aDamageSubset[-1]
+					agentDamageTaken[-1] += aDamageSubset[-1]
 					break
 				
-				agentTotalDamage[-1] += aDamageSubset[agentNewLifeIdx[0]-1]
-			cumADamage.append(sum(agentTotalDamage)/len(agentTotalDamage))
+				agentDamageTaken[-1] += aDamageSubset[agentNewLifeIdx[0]-1]
+			cumADamage.append(sum(agentDamageTaken)/len(agentDamageTaken))
 			
 			#Opponent total damage
-			opponentTotalDamage.append(0)
+			opponentDamageTaken.append(0)
 			for stock in range(3,-1,-1):
 				oppNewLifeIdx = np.where(oStockSubset==stock)[0]
 				
 				if oppNewLifeIdx.size == 0:						#No more deaths
-					opponentTotalDamage[-1] += oDamageSubset[-1]
+					opponentDamageTaken[-1] += oDamageSubset[-1]
 					break
 
-				opponentTotalDamage[-1] += oDamageSubset[oppNewLifeIdx[0]-1]
-			cumODamage.append(sum(opponentTotalDamage)/len(opponentTotalDamage))
+				opponentDamageTaken[-1] += oDamageSubset[oppNewLifeIdx[0]-1]
+			cumODamage.append(sum(opponentDamageTaken)/len(opponentDamageTaken))
 
 			#Remove all data before this recorded entry. 
 			aStock = aStock[endGameIdx+1:]
@@ -127,13 +127,31 @@ def main():
 
 		## cumWinPctg
 		#ax1.plot( np.array(range(0,len(cumWinPctg))), cumWinPctg, label = log)
-		runningMeanWinPctg = running_mean(winLoss, N)
-		ax1.plot(np.linspace(N,np.array(winLoss).size,runningMeanWinPctg.size), runningMeanWinPctg, label = logLabels[indL])
-	
-	ax1.set(xlabel = 'Games Played', ylabel = 'Win Percentage',
-		    xlim =(0,max(gameLims)), ylim = (0,1.05) )
+		runWinPctg = running_mean(winLoss, N)
+		
+		runAgentDamageTaken = running_mean(agentDamageTaken, N)
+		runOpponentDamageTaken = running_mean(opponentDamageTaken, N)
+		runDiffDamageTaken = runOpponentDamageTaken-runAgentDamageTaken
+
+		runAgentEndgameStocks = running_mean(agentEndgameStocks,N)
+		runOpponentEndgameStocks = running_mean(opponentEndgameStocks,N)
+		runDiffStocks = runAgentEndgameStocks-runOpponentEndgameStocks
+
+		gameArray = np.linspace(N,np.array(winLoss).size,runWinPctg.size)
+		ax1.plot(gameArray, runWinPctg, label = logLabels[indL])
+		ax2.plot(gameArray, runDiffDamageTaken, label = logLabels[indL])
+		ax3.plot(gameArray, runDiffStocks, label=logLabels[indL])
+	ax1.set(xlabel = 'Games Played', ylabel = 'Win Percentage', xlim =(0,max(gameLims)), ylim = (0,1.05) )
 	ax1.legend()
 	ax1.grid()
+
+	ax2.legend()
+	ax2.grid()
+	ax2.set(xlabel = 'Games Played', ylabel = 'damage?', xlim =(0,max(gameLims)))
+	
+	ax3.legend()
+	ax3.grid()
+	ax3.set(xlabel = 'Games Played', ylabel = 'stocks', xlim =(0,max(gameLims)))
 
 	plt.show()
 
