@@ -12,10 +12,9 @@ def main():
 				'$\lambda = 200$, Lvl1 prior, Lvl1 opponent',
 				'$\lambda = 200$, Lvl1 prior, Lvl3 opponent',
 				'$\lambda = 200$, Lvl3 prior, Lvl4 opponent']
-	gameLims = [85,121,160, 137]
-	N = 15
+	gameLims = [85,121,160, 137+99,250]
+	N = 25
 
-	gameShift = 0
 	fig1, ax1 = plt.subplots()		#Plots for winrate
 	fig2, ax2 = plt.subplots()		#Plots for damage
 	fig3, ax3 = plt.subplots()		#Plots for end of game stocks	
@@ -39,6 +38,8 @@ def main():
 
 		agentEndgameStocks = []		#Num stocks left for agent at end of each game
 		opponentEndgameStocks = []	#Num stocks left for opponent at end of each game
+		cumAEndStocks = []
+		cumOEndStocks = []
 
 		gameCounter = 0
 		while True:
@@ -83,6 +84,9 @@ def main():
 			agentEndgameStocks.append(aStockSubset[-1])
 			opponentEndgameStocks.append(oStockSubset[-1])
 
+			cumAEndStocks.append(sum(agentEndgameStocks)/len(agentEndgameStocks))
+			cumOEndStocks.append(sum(opponentEndgameStocks)/len(opponentEndgameStocks))
+
 			#Agent total damage
 			agentDamageTaken.append(0)
 			for stock in range(3,-1,-1):
@@ -107,6 +111,7 @@ def main():
 				opponentDamageTaken[-1] += oDamageSubset[oppNewLifeIdx[0]-1]
 			cumODamage.append(sum(opponentDamageTaken)/len(opponentDamageTaken))
 
+
 			#Remove all data before this recorded entry. 
 			aStock = aStock[endGameIdx+1:]
 			oStock = oStock[endGameIdx+1:]
@@ -123,12 +128,11 @@ def main():
 			aDamage = aDamage[a4idx:]
 			oDamage = oDamage[a4idx:]
 
-			gameCounter += 1
-			if gameCounter > gameLims[indL]:
-				break
+			# gameCounter += 1
+			# if gameCounter > gameLims[indL]:
+			# 	break
 
-		## cumWinPctg
-		#ax1.plot( np.array(range(0,len(cumWinPctg))), cumWinPctg, label = log)
+		#Setup plot vecs
 		runWinPctg = running_mean(winLoss, N)
 		
 		runAgentDamageTaken = running_mean(agentDamageTaken, N)
@@ -140,9 +144,22 @@ def main():
 		runDiffStocks = runAgentEndgameStocks-runOpponentEndgameStocks
 
 		gameArray = np.linspace(N,np.array(winLoss).size,runWinPctg.size)
-		ax1.plot(gameArray, runWinPctg, label = logLabels[indL])
-		ax2.plot(gameArray, runDiffDamageTaken, label = logLabels[indL])
-		ax3.plot(gameArray, runDiffStocks, label=logLabels[indL])
+
+		cumWinPctg
+		cumDiffDamage = np.array(cumODamage) -  np.array(cumADamage)
+		cumDiffStocks = np.array(cumAEndStocks) - np.array(cumOEndStocks)
+
+		#Plot
+		#Running mean plots -> Mean over last N
+		# ax1.plot(gameArray, runWinPctg, label = logLabels[indL])
+		# ax2.plot(gameArray, runDiffDamageTaken, label = logLabels[indL])
+		# ax3.plot(gameArray, runDiffStocks, label=logLabels[indL])
+
+		#Cumulative mean plots -> Mean over all games up to point
+		ax1.plot(gameArray, cumWinPctg[N-1:], label = logLabels[indL])
+		ax2.plot(gameArray, cumDiffDamage[N-1:], label = logLabels[indL])
+		ax3.plot(gameArray, cumDiffStocks[N-1:], label = logLabels[indL])
+
 		
 	ax1.set(xlabel = 'Games played', ylabel = 'Win percentage', xlim =(0,max(gameLims)+N), ylim = (0,1.05) )
 	ax1.legend()
@@ -159,7 +176,7 @@ def main():
 	ax3.set(xlabel = 'Games Played', ylabel = 'Stock differential', xlim =(0,max(gameLims)+N))
 	fig3.savefig("stocks.png", dpi = 300)
 
-	#plt.show()
+	plt.show()
 
 def running_mean(x, N):
     cumsum = np.cumsum(np.insert(x, 0, 0)) 
