@@ -8,11 +8,11 @@ def main():
 			'logs/Agent1logs/lvl1Lam50PriorLam200Lvl1.csv',
 			'logs/Agent1Logs/nightMondayLVL3.csv',
 			'logs/Agent1logs/LVL4.csv']
-	logLabels = ['$\lambda = 50$, No prior, Lvl1 opponent',
-				'$\lambda = 200$, Lvl1 prior, Lvl1 opponent',
-				'$\lambda = 200$, Lvl1 prior, Lvl3 opponent',
-				'$\lambda = 200$, Lvl3 prior, Lvl4 opponent']
-	gameLims = [85,121,160, 137+99,245]
+	logLabels = ['$\lambda = 50$, No prior, Lvl1 opponent, 85 games',
+				'$\lambda = 200$, Lvl1 prior, Lvl1 opponent, 120 games',
+				'$\lambda = 200$, Lvl1 prior, Lvl3 opponent, 160 games',
+				'$\lambda = 200$, Lvl3 prior, Lvl4 opponent, 245 games']
+	gameLims = [85,121,160, 245]
 	N = 25
 
 	fig1, ax1 = plt.subplots()		#Plots for winrate
@@ -128,9 +128,9 @@ def main():
 			aDamage = aDamage[a4idx:]
 			oDamage = oDamage[a4idx:]
 
-			# gameCounter += 1
-			# if gameCounter > gameLims[indL]:
-			# 	break
+			gameCounter += 1
+			if gameCounter > gameLims[indL]:
+				break
 
 		#Setup plot vecs
 		runWinPctg = running_mean(winLoss, N)
@@ -151,9 +151,13 @@ def main():
 
 		#Plot
 		#Running mean plots -> Mean over last N
-		ax1.plot(gameArray, runWinPctg, label = logLabels[indL])
-		ax2.plot(gameArray, runDiffDamageTaken, label = logLabels[indL])
-		ax3.plot(gameArray, runDiffStocks, label=logLabels[indL])
+		# ax1.plot(gameArray, runWinPctg, label = logLabels[indL])
+		# ax2.plot(gameArray, runDiffDamageTaken, label = logLabels[indL])
+		# ax3.plot(gameArray, runDiffStocks, label=logLabels[indL])
+		ax1.plot(np.linspace(0,1,len(runWinPctg)) , runWinPctg, 		 label = logLabels[indL])
+		ax2.plot(np.linspace(0,1,len(runWinPctg)) , runDiffDamageTaken, label = logLabels[indL])
+		ax3.plot(np.linspace(0,1,len(runWinPctg)) , runDiffStocks, 	 label=logLabels[indL])
+
 
 		#Cumulative mean plots -> Mean over all games up to point
 		# ax1.plot(gameArray, cumWinPctg[N-1:], label = logLabels[indL])
@@ -161,19 +165,19 @@ def main():
 		# ax3.plot(gameArray, cumDiffStocks[N-1:], label = logLabels[indL])
 
 		
-	ax1.set(xlabel = 'Games played', ylabel = 'Win percentage', xlim =(0,max(gameLims)+N), ylim = (0,1.05) )
-	ax1.legend()
+	ax1.set(xlabel = 'Games played', ylabel = 'Win percentage', xlim =(0,1), ylim = (0,1.05) )
+	ax1.legend(fontsize ='x-small')
 	ax1.grid()
 	fig1.savefig("winpctg.png", dpi = 300)
 
-	ax2.legend()
+	ax2.set(xlabel = 'Games played', ylabel = 'Damage differential', xlim =(0,1))
+	ax2.legend(fontsize ='x-small')
 	ax2.grid()
-	ax2.set(xlabel = 'Games played', ylabel = 'Damage differential', xlim =(0,max(gameLims)+N))
 	fig2.savefig("damage.png", dpi = 300)
 
-	ax3.legend()
+	ax3.set(xlabel = 'Games Played', ylabel = 'Stock differential', xlim =(0,1))
+	ax3.legend(fontsize ='x-small')
 	ax3.grid()
-	ax3.set(xlabel = 'Games Played', ylabel = 'Stock differential', xlim =(0,max(gameLims)+N))
 	fig3.savefig("stocks.png", dpi = 300)
 
 	plt.show()
