@@ -24,7 +24,8 @@
 \maketitle
 
 \begin{abstract}
-Reinforcement learning (RL) has been shown to produce optimal policies in environments with small discrete state and action spaces, but has significant limitations when the state-action space is continuous. Discretization techniques can solve the issue of continuous state-action spaces, however this often results in intractable runtimes for the learning algorithm. In this paper, we discuss a reinforcement learning strategy for the video game Super Smash Bros Melee, a game that has a large state-action, by applying global approximation in the Q-learning algorithm. We train the algorithm on progressively harder opponents and show that the agent is able to obtain better metrics.
+Reinforcement learning (RL) is able to produce effective policies in environments with small discrete state and action spaces but has significant limitations when the state-action space is continuous. Discretization techniques can solve the issue of continuous state-action spaces, however this often results in intractable state spaces or a poor approximation of the continuum.In this paper, we discuss a reinforcement learning strategy for t Super Smash Bros Melee, a video game with a continuous state and action space by applying global approximation in the Q-learning algorithm. We train the algorithm on progressively harder opponents and show improvement in the agents metrics over time.
+
 \end{abstract}
 
 
@@ -69,15 +70,23 @@ Reinforcement learning (RL) has been shown to produce optimal policies in enviro
 %
 \section*{Appendix}
 
-An Appendix, if needed, appears \textbf{before} research funding information and other acknowledgments.
+\begin{figure}[!htb]
+\centering
+	\includegraphics[width=120mm]{winpctg.png}
+	\caption{N game running average of difference in stocks at end of game. \label{winpctg}}
+\end{figure}
 
+\begin{figure}[!htb]
+\centering
+	\includegraphics[width=120mm]{stocks.png}
+	\caption{N game running average of difference in stocks at end of game. \label{stocks}}
+\end{figure}
 
-%
-% Funding Sources
-%
-\section*{Funding Sources}
-
-We would like to thank mom and dad.
+\begin{figure}[!htb]
+\centering
+	\includegraphics[width=120mm]{damage.png}
+	\caption{N game running average of difference in damage dealt and taken. \label{damage}}
+\end{figure}
 
 
 %
@@ -85,14 +94,11 @@ We would like to thank mom and dad.
 %
 \section*{Acknowledgments}
 
-We would like to acknowledge libmelee for providing an open source solution to obtaining information about the game while it is being played.
+We would like to acknowledge libmelee for providing an open source solution to obtaining information about the game while it is being played. We would also like to thank Professor Mykel Kochenderfer and the entire AA228 course staff for providing a fantastic learning experience. 
 
 % add bibliography
 % DONT DO BILBIO STYLE
 
 \bibliography{biblio}
-
-
-
 
 \end{document}

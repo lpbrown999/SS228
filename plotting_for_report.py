@@ -12,7 +12,7 @@ def main():
 				'$\lambda = 200$, Lvl1 prior, Lvl1 opponent',
 				'$\lambda = 200$, Lvl1 prior, Lvl3 opponent',
 				'$\lambda = 200$, Lvl3 prior, Lvl4 opponent']
-	gameLims = [85,121,160, 137+99,250]
+	gameLims = [85,121,160, 137+99,245]
 	N = 25
 
 	fig1, ax1 = plt.subplots()		#Plots for winrate
@@ -151,14 +151,14 @@ def main():
 
 		#Plot
 		#Running mean plots -> Mean over last N
-		# ax1.plot(gameArray, runWinPctg, label = logLabels[indL])
-		# ax2.plot(gameArray, runDiffDamageTaken, label = logLabels[indL])
-		# ax3.plot(gameArray, runDiffStocks, label=logLabels[indL])
+		ax1.plot(gameArray, runWinPctg, label = logLabels[indL])
+		ax2.plot(gameArray, runDiffDamageTaken, label = logLabels[indL])
+		ax3.plot(gameArray, runDiffStocks, label=logLabels[indL])
 
 		#Cumulative mean plots -> Mean over all games up to point
-		ax1.plot(gameArray, cumWinPctg[N-1:], label = logLabels[indL])
-		ax2.plot(gameArray, cumDiffDamage[N-1:], label = logLabels[indL])
-		ax3.plot(gameArray, cumDiffStocks[N-1:], label = logLabels[indL])
+		# ax1.plot(gameArray, cumWinPctg[N-1:], label = logLabels[indL])
+		# ax2.plot(gameArray, cumDiffDamage[N-1:], label = logLabels[indL])
+		# ax3.plot(gameArray, cumDiffStocks[N-1:], label = logLabels[indL])
 
 		
 	ax1.set(xlabel = 'Games played', ylabel = 'Win percentage', xlim =(0,max(gameLims)+N), ylim = (0,1.05) )
