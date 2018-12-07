@@ -1,12 +1,11 @@
 \section{Unique Approaches}
 
-To apply perceptron Q-learning to Super Smash Brothers Melee, we apply unique techniques to deal with discontinuities in optimal behavior, state-evolution, and delays between an action and its result.
+To apply perceptron Q-learning to Super Smash Brothers Melee, we apply unique techniques to deal with discontinuities in optimal behavior, state-evolution, and large delays between an action and its result.
 
 \subsection{Discontinuity in Optimal Behavior}
-In Super Smash Brothers Melee, the optimal action largely depends on the current state. An issue arises in global-approximation techniques when nearby states should have dissimilar optimal actions. An example of this is the case of an agent standing on the edge of the stage, in which its goal is to deal damage to the opponent, and an agent being slightly off of the stage (about to fall to its death unless some preventative action is taken), in which it should make an effort to navigate back to the stage and avoid dying. 
+In Super Smash Brothers Melee, the optimal action largely depends on the current state. An issue arises in global-approximation techniques when states that produce similar basis function outputs should have dissimilar optimal actions. An example of this is the case of an agent standing on the edge of the stage, in which its goal is to deal damage to the opponent, and an agent being slightly off of the stage (about to fall to its death unless some preventative action is taken), in which it should make an effort to navigate back to the stage and avoid dying. 
 
-To prevent generalization from nearby but dissimilar states, we discretize the environment into an additional three super-states: off the stage to the left, on the stage, and off the stage to the right. These super-states represent different situations in which the optimal behavior of the agent should be unique from a nearby position that is in a different super-state. As discussed in the applications section, the padded beta vector results in differently trained perceptron weights in different super-states for each map partition. This improves the agents ability to survive after being knocked off of the stage because the agent learns to jump back towards the stage in an effort to survive (and avoid penalties for dying). 
-
+To prevent generalization from nearby but dissimilar states, we discretize the environment into an additional three "super-states": off the stage to the left, on the stage, and off the stage to the right. These super-states represent different situations in which the optimal behavior of the agent should be unique from a nearby position that is in a different super-state. As discussed in the applications section, the padded beta vector results in differently trained perceptron weights in different super-states for each map partition. This improves the agents ability to survive after being knocked off of the stage because the agent learns to jump back towards the stage in an effort to survive (and avoid penalties for dying). 
 
 \subsection{State Evolution}
 Another issue we address was the impact of ”action-lockout”, in which an action taken may have no impact on the agents transition to the next state. An example of this is when the agent selects an action with a long wind-up animation that cannot be canceled by inputting other actions. To address this, actions that are taken during an "action-lockout" are ignored during the training process of the basis function weights. 
@@ -25,8 +24,3 @@ Figure~\ref{fig:stateevo} is a representation a state evolution. All the green s
 \subsection{Action Impact Delay}
 
 Dealing with rewards for kills and deaths is not straight forward due to a large time delay between an action that results in one of these events and the event occurring. To assign rewards to killing the opponent, the last action the agent take that deals damage is recorded as a "last damaging action". When the opponent dies, a large reward is assigned to this "last damaging action". This is necessary to avoid assigning large rewards to actions that do not cause the opponent to die, and is equivalent to knowing immediately after the action is taken if it will result in the death of the opponent.
-
-
-
-
-

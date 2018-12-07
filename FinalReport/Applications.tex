@@ -3,7 +3,7 @@
 \subsection{Discretized actions}
 The controller for the Nintendo game cube can be thought of as a continuous action space for Super Smash Brothers Melee. There are two analog control sticks which can be placed at any value from -1 to 1 in both the x and y direction, two analog shoulder buttons which are functionally identical and range from 0 to 1, as well as four digital face buttons. 
 
-To reduce the number of potential actions, repetitive combinations of buttons were discarded and the analog inputs were discretized. We represented seven buttons ($A$,$B$,$X$,$X_{s}$,$L$,$Z$, and $\varnothing$) as binary variables, where a value of one maps to pressed and zero maps to not pressed, and the analog stick as a variable with three possible values for both the x direction (left, middle, and right) and the y direction (down, middle, and up). To create an action, a single button and a value for the main analog sick is selected. This results in an action space $\mathbb{A}$ with seven possible buttons and nine possible analog stick values, or 63 total possible actions.
+To reduce the number of potential actions, repetitive combinations of buttons were discarded and the analog inputs were discretized. We represented seven buttons ($A$,$B$,$X$,$X_{s}$,$L$,$Z$, and $\varnothing$) as binary variables, where a value of one maps to pressed and zero maps to not pressed, and the analog stick as a variable with three possible values for both the x direction (left, middle, and right) and the y direction (down, middle, and up). To create an action, a single button and a value for the main analog sick is selected. This results in an action space $\mathbb{A}$ with seven possible buttons and nine possible analog stick values, for a total of 63 total possible actions.
 
 \subsection{Basis Functions}
 We designed a set of basis functions to span the state space in Super Smash Brothers Melee and allow for perceptron based global approximation of state action values. Our beta function, $\beta$, contains the following elements.
@@ -17,13 +17,13 @@ We designed a set of basis functions to span the state space in Super Smash Brot
 \item A set of flags for the number of jumps left
 \end{itemize}
 
-Additionally, the state space is discretized into three "super-states", being off the stage to the left, on the stage, and off the stage to the right. A zero padded vector $\beta_{p} = [\beta,~0_{|\beta|},~0_{|\beta|}]$ is then created, and the base $\beta$ function is inserted to the appropriate super-state index. The need and  justification for this technique is discussed in the novel approaches section.
+Additionally, the state space is discretized into three "super-states", being off the stage to the left, on the stage, and off the stage to the right. A zero padded vector $\beta_{p} = [~0_{|\beta|},~0_{|\beta|},~0_{|\beta|}]$, where  $0_{|\beta|}$ is a zero vector of length $|\beta|$,  is then created. The base $\beta$ function replaces $0_{|\beta|}$ in the appropriate index. The need and justification for this technique is discussed in the novel approaches section.
 
 \subsection{Reward Functions}
 
-In order to apply perceptron Q-learning to to SSBM, a reward function was defined. As described in the introduction, the goal of the game is to ultimately knock your opponent off the stage, which becomes easier as their damage increases since the damage causes them to fly further. This indicates a careful balance between accumulating damage to facilitate a knock out move and taking an action that knocks the opponent back far to knock them out (deferring accumulating more damage in favor of knocking the opponent out). To accomplish this, we defined the reward function to favor dealing damage to the opponent when they are at lower damage, decaying for damage dealt when the opponent is already highly damaged. Additionally, the agent receives a penalty for taking damage in the same fashion. To prevent the agent from jumping off the stage and prematurely dying, a reward was also given when the agent managed to move from being off of the side of the stage in state s, to on the stage in state $s'$. Rewards are also assigned for kills and penalties imposed for dying.
+In order to apply perceptron Q-learning to to SSBM, a reward function was defined. As described in the introduction, the goal of the game is to ultimately knock your opponent off the stage, which becomes easier as their damage increases since the damage causes them to fly further. This indicates a careful balance between accumulating damage to facilitate a knock out move and taking an action that knocks the opponent back far to knock them out (deferring accumulating more damage in favor of knocking the opponent out). The reward function is then designed to favor dealing damage to the opponent while they are at low damage, with the reward decaying exponentially for damage dealt to opponents at higher damage. Additionally, the agent receives a penalty for taking damage in the same fashion. To prevent the agent from jumping off the stage and prematurely dying, a reward was also given when the agent managed to move from being off of the side of the stage in state s, to on the stage in state $s'$. Rewards are also assigned for kills and penalties imposed for dying.
 
-Denoting the opponents damage as $d_o$, the agents damage as $d_a$, and the on stage parameter of the agent as a true / false flag $ON$, the reward function becomes:
+Denoting the opponents damage as $d_o$, the agents damage as $d_a$, and the on stage parameter of the agent as a true - false flag $ON$, the reward function becomes:
 
 \vspace{-6mm}
 \begin{equation}
@@ -31,4 +31,4 @@ R = (d'_o-d_o)e^{-.01*d_o} - (d'_a-d_a)e^{-.01*d_a} + r_{jump}\delta_{0,ON}\delt
 \end{equation}
 \vspace{-8mm}
 
-The reward assignment was not straight forward due to the lag in state-evolution, action lockout, and delay between actions and resulting kills and deaths. The methods in which we handle these issues is described in the next section.
+The reward assignment was not straight forward due to the lag in state-evolution and delay between actions and resulting kills and deaths. The methods in which we handle these issues is described in the next section.

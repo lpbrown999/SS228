@@ -3,7 +3,7 @@
 
 Reinforcement learning (RL) is an area of research focusing on finding an action that will maximize a reward function given the state of an agent. Finding the optimal state action value requires large amounts exploration of the environment. The ability to gather reliable data is crucial to the learning process because this provides the learning algorithm with an accurate representation of how the state evolves with a given action. 
 
-RL has recently become a topic of interest due to its ability to solve problems without knowledge of the underlying dynamics.This model free approach is used over a large set of applications including control theory, natural language processing, image recognition, and medical diagnoses. A very popular model-free reinforcement learning algorithm is Q-learning, which operates by applying incremental estimation to the Bellman equation.
+RL has recently become a topic of interest due to its ability to solve problems without knowledge of the underlying dynamics.This model free approach is used over a large set of applications including control theory, natural language processing, image recognition, and medical diagnoses. A very popular model-free reinforcement learning algorithm is Q-learning which operates by applying incremental estimation to the Bellman equation\cite{DMU}.
 
 \vspace{-6mm}
 \begin{equation}
@@ -27,7 +27,7 @@ Super Smash Bros Melee is a platform based fighting game in which the goal is to
 	\caption{Super Smash Brothers Melee game environment. \label{melee}}
 \end{figure}
 
-To interact with the game environment, we leverage the open-source game emulator Dolphin and a Python library libmelee which provides an interface for reading state values and sending controller inputs. 
+To interact with the game environment, we leverage the open-source game emulator Dolphin and an python library libmelee which provides an interface for reading state values and sending controller inputs to the agent. 
 
 %We define the action space as $\mathbb{A}$ and the state space as $\mathbb{S}$. The action space contains a set of actions that are mapped to a combination of buttons being pressed on a gamecube controller. The state space contains a set of continuous and discrete variables that represent the agent and its opponent in the environment. Values encoded in the basis function $\beta(s)$ from the state space include the agents position, relative position to the opponent, current animation value, damage levels, direction facing, and number of jumps remaining.
 
