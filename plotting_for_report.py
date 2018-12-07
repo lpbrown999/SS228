@@ -12,7 +12,7 @@ def main():
 				'$\lambda = 200$, Lvl1 prior, Lvl1 opponent',
 				'$\lambda = 200$, Lvl1 prior, Lvl3 opponent',
 				'$\lambda = 200$, Lvl3 prior, Lvl4 opponent']
-	gameLims = [85,121,160, 99]
+	gameLims = [85,121,160, 137]
 	N = 15
 
 	gameShift = 0
