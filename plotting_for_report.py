@@ -165,17 +165,17 @@ def main():
 		# ax3.plot(gameArray, cumDiffStocks[N-1:], label = logLabels[indL])
 
 		
-	ax1.set(xlabel = 'Games played', ylabel = 'Win percentage', xlim =(0,1), ylim = (0,1.05) )
+	ax1.set(xlabel = 'Percent games completed', ylabel = 'Win percentage', xlim =(0,1), ylim = (0,1.05) )
 	ax1.legend(fontsize ='x-small')
 	ax1.grid()
 	fig1.savefig("winpctg.png", dpi = 300)
 
-	ax2.set(xlabel = 'Games played', ylabel = 'Damage differential', xlim =(0,1))
+	ax2.set(xlabel = 'Percent games completed', ylabel = 'Difference in total damage dealt', xlim =(0,1))
 	ax2.legend(fontsize ='x-small')
 	ax2.grid()
 	fig2.savefig("damage.png", dpi = 300)
 
-	ax3.set(xlabel = 'Games Played', ylabel = 'Stock differential', xlim =(0,1))
+	ax3.set(xlabel = 'Percent games completed', ylabel = 'Stock difference at end of game', xlim =(0,1))
 	ax3.legend(fontsize ='x-small')
 	ax3.grid()
 	fig3.savefig("stocks.png", dpi = 300)
