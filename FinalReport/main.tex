@@ -24,16 +24,8 @@
 \maketitle
 
 \begin{abstract}
-In this paper, we discuss a reinforcement learning strategy for the video game Super Smash Bros Melee. 
+Reinforcement learning (RL) has been shown to produce optimal policies in environments with small discrete state and action spaces, but has significant limitations when the state-action space is continuous. Discretization techniques can solve the issue of continuous state-action spaces, however this often results in intractable runtimes for the learning algorithm. In this paper, we discuss a reinforcement learning strategy for the video game Super Smash Bros Melee, a game that has a large state-action, by applying global approximation in the Q-learning algorithm. We train the algorithm on progressively harder opponents and show that the agent is able to obtain better metrics.
 \end{abstract}
-
-\section*{Nomenclature}
-
-{\renewcommand\arraystretch{1.0}
-\noindent\begin{longtable*}{@{}l @{\quad=\quad} l@{}}
-$\beta$  & basis function for global approximation \\
-$a$ &    cylinder diameter \\
-\end{longtable*}}
 
 
 %
