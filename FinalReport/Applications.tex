@@ -3,13 +3,13 @@
 \subsection{Discretized actions}
 The controller for the Nintendo game cube can be thought of as a continuous action space for Super Smash Brothers Melee. There are two analog control sticks which can be placed at any value from -1 to 1 in both the x and y direction, two analog shoulder buttons which are functionally identical and range from 0 to 1, as well as four digital face buttons. 
 
-To reduce the number of potential actions, repetitive combinations of buttons were discarded and the analog inputs were discretized. We represented five buttons ($A$,$B$,$X$,$L$, and $Z$) as binary variables, where a value of one maps to pressed and zero maps to not pressed, and the analog stick as a variable with three possible values for both the x direction (left, middle, and right) and the y direction (down, middle, and up). We also include a "short hop" button press, $X_{s}$, where X is pressed for a shorter amount of time to give the alternative jumping action in game, and a "none" button press, $\varnothing$, where none of the buttons are pressed but a direction on the control stick may be selected. To create an action, a single button ($A$,$B$,$X$,$X_{s}$,$L$,$Z$, $\varnothing$) is selected along with a value for the main analog sick, resulting in an action space $\mathbb{A}$ with seven possible buttons and nine possible analog stick values. This means our action space has a total of 63 possible actions. 
+To reduce the number of potential actions, repetitive combinations of buttons were discarded and the analog inputs were discretized. We represented seven buttons ($A$,$B$,$X$,$X_{s}$,$L$,$Z$, and $\varnothing$) as binary variables, where a value of one maps to pressed and zero maps to not pressed, and the analog stick as a variable with three possible values for both the x direction (left, middle, and right) and the y direction (down, middle, and up). To create an action, a single button and a value for the main analog sick is selected. This results in an action space $\mathbb{A}$ with seven possible buttons and nine possible analog stick values, or 63 total possible actions.
 
 \subsection{Basis Functions}
 We designed a set of basis functions to span the state space in Super Smash Brothers Melee and allow for perceptron based global approximation of state action values. Our beta function, $\beta$, contains the following elements.
 
 \begin{itemize}
-\item A set of normal distributions along the x and y axes
+\item A set of normal distributions along the x and y axes to approximate the positions
 \item A set of normal distributions for the relative distance between the agent and the opponent
 \item A flag for the direction the agent is facing and a flag for the direction the opponent is facing
 \item A set of flags for the agent and a set of flags for the opponent to represent unique animations
@@ -25,6 +25,10 @@ In order to apply perceptron Q-learning to to SSBM, a reward function was define
 
 Denoting the opponents damage as $d_o$, the agents damage as $d_a$, and the on stage parameter of the agent as a true / false flag $ON$, the reward function becomes:
 
-$$R = (d'_o-d_o)exp(-.01*d_o) - (d'_a-d_a)exp(-.01*d_a) + r_{jump}\delta_{0,ON}\delta_{1,ON'}  + r_{kill} + r_{death}$$
+\vspace{-6mm}
+\begin{equation}
+R = (d'_o-d_o)e^{-.01*d_o} - (d'_a-d_a)e^{-.01*d_a} + r_{jump}\delta_{0,ON}\delta_{1,ON'}  + r_{kill} + r_{death}
+\end{equation}
+\vspace{-8mm}
 
 The reward assignment was not straight forward due to the lag in state-evolution, action lockout, and delay between actions and resulting kills and deaths. The methods in which we handle these issues is described in the next section.
