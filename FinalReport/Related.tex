@@ -1,3 +1,14 @@
 \section{Related Work}
 
-blah blah \cite{emigh} blah blah
+Q-learning has been studied for the past few decades due to its ability to learn complex tasks without little knowledge of the underlying system. While reinforcement learning can prove to develop desirable policies, knowledge of the environment the agent is acting is is crucial. Often times, the state space and action spaces are continuous, and difficult to represent like in~\cite{gaskett} where Gasket et al implemented a novel interpolator to approximate the Q-function with state generalization and action generalization. In addition to the difficulties continuous state and action spaces present, environments can be adversarial. Applying reinforcement learning in an adversarial environment can prove to be difficult because the environment is working against the agent. In~\cite{uther}, a generalized reinforcement learning algorithm is applied to a agent in an adversarial environment. Both~\cite{gaskett} and~\cite{uther} show that applying generalization to reinforcement learning is viable solution to dealing with the complexity of discretizing state and action spaces. 
+
+In more recent advancement in generalization for reinforcement learning, Emigh et al applied a local approximation reinforcement learning algorithm in~\cite{emigh} to a video game called Frogger. Nearest neighbor  is a local approximation method to generalize the state space based on states that close in proximity to each other. This proves to be a good strategy when there is limited data and the optimal policy can still prove effective is applied to states close to previously visited states.
+
+Another difficulty in reinforcement learning is assigning credit to the action the led to the reward. Depending on the dynamics of the environment that reinforcement learning is being applied to, the reward from executing an action can be delayed. Take for example winning the lottery, there is a large delay between when we but the lottery ticket and when we get the reward. If we are drinking coffee right before we find out we win the lottery, the reward of winning the lottery should still be assigned to buying the ticket and not to drinking coffee. Sutton et al developed a method in~\cite{sutton} to properly assign credit to the action or sequence of actions that lead to a reward. This problem can become increasingly difficult to address as the dimensionality of the problem increases.
+
+
+
+
+
+hurt dur t \cite{sutton}
+

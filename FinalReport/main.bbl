@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{4}
 \newcommand{\enquote}[1]{``#1''}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
@@ -8,6 +8,16 @@
   \providecommand{\doi}{doi:\discretionary{}{}{}\begingroup
   \urlstyle{rm}\Url}\fi
 
+\bibitem[{Gasket et~al.(1999)Gasket, Wettergreen, and Zelinsky}]{gaskett}
+Gasket, C., Wettergreen, D., and Zelinsky, A., \enquote{Q-Learning in
+  Continuous State and Action Spaces,} \emph{Advanced Topics in Artificial
+  Intelligence}, , No.~4, 1999, pp. 417--428.
+
+\bibitem[{Uther and Veloso(1997)}]{uther}
+Uther, W.~T., and Veloso, M.~M., \enquote{Generalizing adversarial
+  reinforcement learning,} \emph{AAAI Fall Symposium on Model Directed
+  Autonomous Systems}, , No.~3, 1997.
+
 \bibitem[{Emigh et~al.(2016)Emigh, Kriminger, Brockmeier, Principe, and
   Pardalos}]{emigh}
 Emigh, M.~S., Kriminger, E.~G., Brockmeier, A.~J., Principe, J.~C., and
@@ -15,5 +25,9 @@ Emigh, M.~S., Kriminger, E.~G., Brockmeier, A.~J., Principe, J.~C., and
   Neighbor Interpolation and Metric Learning,} \emph{IEEE Transactions on
   Computational Intelligence and AI in Games}, Vol.~8, No.~1, 2016, p. 56–66.
 \newblock \doi{10.1109/tciaig.2014.2369345}.
+
+\bibitem[{Sutton(1984)}]{sutton}
+Sutton, R.~S., \enquote{Temporal Credit Assignment in Reinforcement Learning,}
+  , 1984.
 
 \end{thebibliography}
