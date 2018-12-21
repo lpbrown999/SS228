@@ -8,10 +8,10 @@ import os
 import random
 
 #Own library to do batch Q learning
-import batchlearning
+import batchtraining
 
 class SS228agent():
-	def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, tempLogFile, style, beta, reward, betaLen, alpha, gamma, iterations, batchLearn, explStrat, explParam):
+	def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, tempLogFile, style, model, reward, alpha, gamma, iterations, learn, explStrat, explParam):
 		
 		#Self info about game state
 		self.gameState = gamestate
@@ -28,17 +28,16 @@ class SS228agent():
 		self.logArray = np.array([])
 		self.logNow = False
 
-		#Playstyle, beta function
+		#The NN model, playstyle, reward function
+		self.model = model
 		self.style = style
-		self.beta = beta 
 		self.reward = reward
-		self.betaLen = betaLen
 
-		#Learning Params
+		#Learning Params -> these need changing
 		self.alpha = alpha
 		self.gamma = gamma
 		self.iterations = iterations
-		self.batchLearn = batchLearn     #Toggle for updating theta
+		self.learn = learn    			 #Toggle for updating weights
 		self.matchCompl = 0				 #Matches played, gets incirmented at post game score
 
 		#Information for inputs
@@ -56,7 +55,6 @@ class SS228agent():
 		self.numStickVals = len(self.stickVals)
 		self.actionsShape = (7,self.numStickVals,self.numStickVals)
 		self.numActions = np.prod(self.actionsShape)
-
 		self.emptyActionIdx = 58
 
 		#Exploration
@@ -129,13 +127,9 @@ class SS228agent():
 		if self.framesSinceInput >= self.framesBetweenInputs:  
 			
 			if self.style == 'play':				
-				#Compute the expected value of each potential action
-				betaCurr = self.beta( np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()))) )
-				potentialActionValues = np.zeros(self.numActions)
-				for potentialAction in range(0,self.numActions):
-					potentialActionValues[potentialAction] = np.dot(self.thetaWeights[potentialAction*self.betaLen:(potentialAction+1)*self.betaLen],betaCurr)
-				
+				#Compute the expected value of each potential action from the model
 				#Choose an action based on exploration strategy
+				potentialActionValues = model.predict( x = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()))) )
 				actionIdx = self.select_action(potentialActionValues)
 			
 			elif self.style == 'random':
@@ -177,7 +171,7 @@ class SS228agent():
 			#Possible choices
 			actions = np.array(range(0,self.numActions))
 			actionIdx = np.random.choice(actions,p=prob_i)
-			print("Animation#: ", self.selfState.tolist()[5] ,"Selected: ", actionIdx,"with probability: ", prob_i[actionIdx])
+			print("Softmax selected: ", actionIdx,"with probability: ", prob_i[actionIdx])
 		else:
 			actionIdx = potentialActionValues.argmax()
 		return actionIdx
@@ -198,54 +192,20 @@ class SS228agent():
 				
 			self.logNow = False
 
-	# def state_evolution_action_logger(self):
-	# 	#Update -> log every frame so we can see the evolution of the state after an action
-	# 	#Logs to a temp file, will get concatenated to the main log at every post game match score.
-	# 	combined_state_action = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()),np.array([self.lastAction])),axis=0)
-	# 	if np.size(self.logArray,axis=0) == self.inputsBetweenCsvLog:
-	# 		df = pd.DataFrame(self.logArray)
-	# 		df.to_csv(self.tempLogFile, mode='a', header=False, index = False)
-	# 		self.logArray = combined_state_action
-	# 	elif np.size(self.logArray) == 0:
-	# 		self.logArray = combined_state_action
-	# 	else:
-	# 		self.logArray = np.vstack((self.logArray, combined_state_action))
-
 	def templog_to_mainlog(self):
 		#The state action logger logs to a temp file. This gets called to remove the temp file.
 		df = pd.read_csv(self.tempLogFile, header=None)
 		df.to_csv(self.logFile, mode='a', header=False, index = False)
 		os.remove(self.tempLogFile)
 
-	# def record_win_loss(self):
-
-	# 	#NEEDs some thought, not super easy. 
-	# 	agent_stocks = np.array(self.selfState.tolist())[3]
-	# 	opponent_stocks = np.array(self.oppState.tolist())[3]
-	# 	if agent_stocks == 0:
-	# 		pass
-
-
-	def update_theta_weights_learning(self,newThetaFile):
-		#Compute new theta using global approximation q learning from batchlearning.py. Using the templog.
+	def learn_new_weights(self,newWeightsFile):
 		df = pd.read_csv(self.tempLogFile, header=None)
 		data = df.values
-		thetanew = batchlearning.Q_learning_global_approx(data = data, theta = self.thetaWeights, beta=self.beta, reward=self.reward,
-														  alpha = self.alpha, gamma = self.gamma, iterations = self.iterations, 
-													      numActions = self.numActions, betaLen = self.betaLen)
-		#Save the new weights
-		np.save(newThetaFile,thetanew)
-	
-	def update_theta(self, newThetaFile):
-		#Updates from file. Warns if cannot update.
-		if os.path.isfile(newThetaFile):
-			print("Agent: ",self.selfPort," Loading new theta file: ", newThetaFile)
-			self.thetaWeights = np.load(newThetaFile)
-		else:
-			print("Agent: ",self.selfPort," Theta file not specified / found, initializing to 0s: ", newThetaFile)
-			self.thetaWeights = np.zeros(self.beta(np.zeros(32)).size*self.numActions) 
-			np.save(newThetaFile, self.thetaWeights)
-	
+
+		#Replaces the agents current model by training it, then saves weights for tracking.
+		self.model = batchtraining.train_model(model=self.model, data=data, reward=self.reward, gamma=self.gamma, iterations=self.iterations)
+		model.save_weights(newWeightsFile)
+
 	def action_to_controller(self,actionNumber):
 		# unravel action number based on action shape array, obtain stick values
 		buttonPressVec = np.array(np.unravel_index(actionNumber,self.actionsShape), dtype=np.float)
