@@ -11,7 +11,7 @@ import random
 import batchtraining
 
 class SS228agent():
-	def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, tempLogFile, style, model, reward, alpha, gamma, iterations, learn, explStrat, explParam):
+	def __init__(self, dolphin, gamestate, selfPort, opponentPort, logFile, tempLogFile, style, model, alpha, gamma, iterations, learn, explStrat, explParam):
 		
 		#Self info about game state
 		self.gameState = gamestate
@@ -31,14 +31,13 @@ class SS228agent():
 		#The NN model, playstyle, reward function
 		self.model = model
 		self.style = style
-		self.reward = reward
 
 		#Learning Params -> these need changing
-		self.alpha = alpha
+		self.alpha = alpha	#LR
 		self.gamma = gamma
 		self.iterations = iterations
 		self.learn = learn    			 #Toggle for updating weights
-		self.matchCompl = 0				 #Matches played, gets incirmented at post game score
+		self.matchCompl = 0				 #Matches played, gets incremented at post game score
 
 		#Information for inputs
 		self.framesBetweenInputs = 12
@@ -129,7 +128,8 @@ class SS228agent():
 			if self.style == 'play':				
 				#Compute the expected value of each potential action from the model
 				#Choose an action based on exploration strategy
-				potentialActionValues = model.predict( x = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist()))) )
+				fullState = np.concatenate((np.array(self.selfState.tolist()),np.array(self.oppState.tolist())))
+				potentialActionValues = self.model.predict(x = fullState.reshape(-1,32))[0]
 				actionIdx = self.select_action(potentialActionValues)
 			
 			elif self.style == 'random':
@@ -157,10 +157,12 @@ class SS228agent():
 	
 	def select_action(self,potentialActionValues):
 		
+		actions = np.array(range(0,self.numActions))
+		
 		if self.explStrat == 'softmax':
 			lam = self.explParam
 			
-			#Need to normalize the potential action values.
+			#Need to normalize the potential action values
 			if np.linalg.norm(potentialActionValues) > 0:
 				potentialActionValues = potentialActionValues/np.linalg.norm(potentialActionValues)
 			
@@ -169,9 +171,18 @@ class SS228agent():
 			prob_i = prob_i/sum(prob_i)
 
 			#Possible choices
-			actions = np.array(range(0,self.numActions))
 			actionIdx = np.random.choice(actions,p=prob_i)
 			print("Softmax selected: ", actionIdx,"with probability: ", prob_i[actionIdx])
+		
+		elif self.explStrat == 'epsgreedy':
+			
+			if random.random() < self.explParam: 	#Random
+				actionIdx = np.random.choice(actions)
+				print("RANDOM: ", actionIdx)
+			else:
+				actionIdx = potentialActionValues.argmax()
+				print("GREEDY: ", actionIdx)
+
 		else:
 			actionIdx = potentialActionValues.argmax()
 		return actionIdx
@@ -204,7 +215,7 @@ class SS228agent():
 
 		#Replaces the agents current model by training it, then saves weights for tracking.
 		self.model = batchtraining.train_model(model=self.model, data=data, reward=self.reward, gamma=self.gamma, iterations=self.iterations)
-		model.save_weights(newWeightsFile)
+		self.model.save_weights(newWeightsFile)
 
 	def action_to_controller(self,actionNumber):
 		# unravel action number based on action shape array, obtain stick values

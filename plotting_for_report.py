@@ -4,16 +4,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 def main():
-	logs = ['logs/Agent1Logs/noPriorLam50Lvl1.csv',
-			'logs/Agent1logs/lvl1Lam50PriorLam200Lvl1.csv',
-			'logs/Agent1Logs/nightMondayLVL3.csv',
-			'logs/Agent1logs/LVL4.csv']
-	logLabels = ['$\lambda = 50$, No prior, Lvl1 opponent, 85 games',
-				'$\lambda = 200$, Lvl1 prior, Lvl1 opponent, 120 games',
-				'$\lambda = 200$, Lvl1 prior, Lvl3 opponent, 160 games',
-				'$\lambda = 200$, Lvl3 prior, Lvl4 opponent, 245 games']
-	gameLims = [85,121,160, 245]
-	N = 25
+	logs = ['logs/Agent1logs/testingNN.csv']
+	logLabels = ['brah']
+	gameLims = [85,121,160, 500]
+	N = 50
 
 	fig1, ax1 = plt.subplots()		#Plots for winrate
 	fig2, ax2 = plt.subplots()		#Plots for damage

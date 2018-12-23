@@ -10,35 +10,40 @@ import configparser
 from keras.models import Sequential
 from keras.layers import Dense, Activation
 
-# custom lib
-from rewardlib import rewardDict
+# custom libs
 from networklib import NNDict
 
-def compute_reward_vec(data, reward):
+def compute_reward_vec(data, damageFactor=.01):
 
+	#Kill, death is worth 1 and -1, damage is this times damage factor
 	[m,n] = np.shape(data)
 	rewardVec = np.zeros(m)
 
-	##Going to see if the agent can learn for itself without hand feeding it state evolution stuff.
-	#This is separated out so that we could potentially make it more complex with kills etc.
-	for i in range(0,m-1):		
-		#State S and Sp
-		s = data[i,0:32].reshape(-1,32)
-		sp = data[i+1,0:32].reshape(-1,32)
-		s_sp = np.vstack((s,sp))
+	for i in range(0,m-1):	
 
-		#Reward from on going state evolution. Reward function is in rewardlib
-		r = reward(s_sp)	
+		#State S and Sp, initialize r for this transition to 0
+		s = data[i,0:32]
+		sp = data[i+1,0:32]
+
+		#Damage, kill, death
+		agentDamageTaken = sp[2]-s[2]
+		opponentDamageTaken = sp[2+16]-s[2+6]
+
+		#Kill, death
+		gotKill   = sp[3]<s[3]
+		gotKilled = sp[3+16]<s[3]
+
+		r = gotKill - gotKilled + damageFactor * (opponentDamageTaken - agentDamageTaken)
 		rewardVec[i] = r
 
 	return rewardVec
 
 
 #Can call directly by importing batchlearning
-def train_model(model, data, reward, gamma, iterations):
+def train_model(model, data, gamma, iterations):
 	
 	[m,n] = np.shape(data)
-	rewardVec = compute_reward_vec(data, reward)
+	rewardVec = compute_reward_vec(data)
 
 	#Cannot pre compute x,y because model has to do new prediction each time.
 	for j in range(0,iterations):
@@ -48,7 +53,7 @@ def train_model(model, data, reward, gamma, iterations):
 			#State S and Sp, action, reward (precomputed in the data file)
 			s = data[i,0:32].reshape(-1,32)
 			sp = data[i+1,0:32].reshape(-1,32)
-			a = int(data[i,33])
+			a = int(data[i,32])
 			r = rewardVec[i]
 
 			#We want the model to predict that Q(s,a) = r + max(Q(s',a))

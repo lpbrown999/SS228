@@ -14,8 +14,8 @@ import select
 
 #Own libs
 from ss228agent import SS228agent
-from betalib import betaDict
-from rewardlib import rewardDict
+from networklib import NNDict
+
 
 def enter_detected():
 	# poll stdin with 0 seconds for timeout
@@ -56,6 +56,7 @@ dolphin = melee.dolphin.Dolphin(ai_port=2,
 								opponent_port=1,
 								opponent_type=port1Type,
 								logger=None)
+
 gamestate = melee.gamestate.GameState(dolphin)
 def signal_handler(signal, frame):
 	dolphin.terminate()
@@ -68,31 +69,37 @@ print("Dolphin connected.")
 agent1 = None
 agent2 = None
 
-#Global for both agents batch learning
-thetaFolderRootName = config['BatchLearn']['thetaFolderRoot']
-logFolderRootName = config['BatchLearn']['logFolderRoot']
-alpha = float(config['BatchLearn']['alpha'])
-gamma = float(config['BatchLearn']['gamma'])
-iterations = int(config['BatchLearn']['iterations'])
+#Global for both agents for learning
+weightFolderRootName= config['NNLearning']['weightFolderRoot']
+logFolderRootName 	= config['NNLearning']['logFolderRoot']
+alpha 				= float(config['NNLearning']['alpha'])
+gamma 				= float(config['NNLearning']['gamma'])
+iterations 			= int(config['NNLearning']['iterations'])
 
-if port1Type == melee.enums.ControllerType.STANDARD: #Agent 1 is a bot
+if port1Type == melee.enums.ControllerType.STANDARD: 
 	
 	#Feed the game info, log file, style, beta funciton, exploration to the agent. 
 	#Then update the agents theta parameters to be the initial theta file.
 	logFile     = logFolderRootName+'/'+config['Agent1']['logFolder']+'/'+config['Agent1']['logFile']
 	tempLogFile = logFolderRootName+'/'+config['Agent1']['logFolder']+'/temp'+config['Agent1']['logFile']
-	beta = betaDict[config['Agent1']['beta_function']]
-	reward = rewardDict[config['Agent1']['reward_function']]
-	betaLen = len(beta(np.zeros(32)))
-	thetaFile1 = thetaFolderRootName+'/'+config['Agent1']['thetaFolder']+'/'+config['Agent1']['thetaFile'] 
 
-	agent1 = SS228agent(dolphin = dolphin, gamestate = gamestate, selfPort = 1, opponentPort = 2,                            #info about game
-						logFile = logFile, tempLogFile = tempLogFile,  style = config['Agent1']['style'],                    #log file, style
-						beta = beta, reward = reward, betaLen = betaLen,                                                     #beta, reward functions   
-						alpha = alpha, gamma = gamma, iterations = iterations, batchLearn = config['Agent1']['updateTheta'], #batch learning params, and toggle                 
-						explStrat = config['Agent1']['explStrat'], explParam = config['Agent1']['explParam'] )               #exploration strategy
+	#Load model, load weights into model
+	model1 = NNDict[config['Agent1']['model']]
 
-	agent1.update_theta(thetaFile1)
+	weightFoldername = config['Agent1']['weightFolder']
+	weightFileName = config['Agent1']['weightFile']
+	weightFile1 = weightFolderRootName+'/'+weightFoldername+'/'+weightFileName
+	if os.path.isfile(weightFile1):
+		model1.load_weights(weightFile1)
+	else:
+		print("Not loading weights for agent1, file does not exist.")
+	
+	agent1 = SS228agent(dolphin=dolphin, gamestate=gamestate, selfPort=1, opponentPort=2, 
+						logFile=logFile, tempLogFile=tempLogFile, style=config['Agent1']['style'],
+						model=model1, alpha=alpha, gamma=gamma, iterations=iterations, 
+						learn=config['Agent1']['updateWeight'],
+						explStrat = config['Agent1']['explStrat'], explParam = config['Agent1']['explParam'] ) 
+
 	agent1.controller.connect()
 	print("Agent1 controller connected.")
 
@@ -171,16 +178,13 @@ while True:
 	elif gamestate.menu_state == melee.enums.Menu.POSTGAME_SCORES:
 		
 		if agent1:
-			if os.path.isfile(agent1.tempLogFile):				#If the temp log still exists, we need to concatenate it to main log and do batch learning
-				if agent1.batchLearn == 'True':			
-					print("Updating Agent1 theta weights, saving theta file.")
+			if os.path.isfile(agent1.tempLogFile):				#If the temp log still exists, we need to concatenate it to main log and learning
+				if agent1.learn == 'True':			
+					print("Updating agent 1 model.")
 					agent1.matchCompl += 1																		#Incrmt the matches complete parameter of agent 1.
-					newThetaFileA1 = os.path.splitext(thetaFile1)[0]+'_a1_match'+str(agent1.matchCompl)+'.npy'		#Construct new theta file name.
-					agent1.update_theta_weights_learning(newThetaFile = newThetaFileA1)							#Create new thetaFile via batch learning.
-					agent1.update_theta(newThetaFile = newThetaFileA1)				    						#Inject new thetaFile
-				
+					newWeightFileA1 = os.path.splitext(weightFile1)[0]+'_a1_match'+str(agent1.matchCompl)+'.h5'		#Construct new theta file name.
+					agent1.learn_new_weights(newWeightsFile=newWeightFileA1)			    						#Learn new weigh
 				agent1.templog_to_mainlog()
-
 			melee.menuhelper.skippostgame(controller=agent1.controller)
 		
 		if agent2:
