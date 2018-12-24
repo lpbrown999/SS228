@@ -17,6 +17,15 @@ from ss228agent import SS228agent
 from networklib import NNDict
 
 
+##TODO
+#Training 1. randomize sequencing. Make a vector of indexes, randomize its order, 
+# 		     train in that order. So still have a s,a,r,sp but now they arent ocrrelated
+#	      2. Have 2 networks when training -> the one used to make predictions for the actions, 
+#			 then train the new network separately, then return the new network.
+#		  3. Provide the state as a history of states, actions. 
+#New method: continuous actions with 2 networks
+#
+#General: cleanup agent 2 to make same as agent 1
 def enter_detected():
 	# poll stdin with 0 seconds for timeout
 	i,o,e = select.select([sys.stdin],[],[],0)
@@ -181,9 +190,9 @@ while True:
 			if os.path.isfile(agent1.tempLogFile):				#If the temp log still exists, we need to concatenate it to main log and learning
 				if agent1.learn == 'True':			
 					print("Updating agent 1 model.")
-					agent1.matchCompl += 1																		#Incrmt the matches complete parameter of agent 1.
-					newWeightFileA1 = os.path.splitext(weightFile1)[0]+'_a1_match'+str(agent1.matchCompl)+'.h5'		#Construct new theta file name.
-					agent1.learn_new_weights(newWeightsFile=newWeightFileA1)			    						#Learn new weigh
+					agent1.matchCompl += 1																			#Incrmt the matches complete parameter of agent 1.
+					newWeightFileA1 = os.path.splitext(weightFile1)[0]+'_a1_match'+str(agent1.matchCompl)+'.h5'		#Construct new weight file name
+					agent1.learn_new_weights(newWeightsFile=newWeightFileA1)			    						#Learn new weights
 				agent1.templog_to_mainlog()
 			melee.menuhelper.skippostgame(controller=agent1.controller)
 		

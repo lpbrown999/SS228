@@ -30,7 +30,7 @@ class SS228agent():
 
 		#The NN model, playstyle, reward function
 		self.model = model
-		self.style = style
+		self.style = style	#Play
 
 		#Learning Params -> these need changing
 		self.alpha = alpha	#LR
@@ -200,7 +200,7 @@ class SS228agent():
 				self.logArray = combined_state_action
 			else:
 				self.logArray = np.vstack((self.logArray, combined_state_action))
-				
+
 			self.logNow = False
 
 	def templog_to_mainlog(self):
@@ -214,7 +214,7 @@ class SS228agent():
 		data = df.values
 
 		#Replaces the agents current model by training it, then saves weights for tracking.
-		self.model = batchtraining.train_model(model=self.model, data=data, reward=self.reward, gamma=self.gamma, iterations=self.iterations)
+		self.model = batchtraining.train_model(model=self.model, data=data, gamma=self.gamma, iterations=self.iterations)
 		self.model.save_weights(newWeightsFile)
 
 	def action_to_controller(self,actionNumber):

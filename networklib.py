@@ -24,10 +24,9 @@ outputDim = int(config['NNLearning']['outputDim'])					#action size
 #Model 1
 model1 = Sequential()
 model1.add(Dense(inputDim,    	   activation='relu', input_dim=inputDim))		#Input state vec layer
-model1.add(Dense(60,           activation='relu'))
-model1.add(Dense(outputDim,    activation='relu'))				#Output action layer
-model1.compile(loss='mse', optimizer='adam', metrics=['mae'])	#Default adam params
-
+model1.add(Dense(60,               activation='relu'))
+model1.add(Dense(outputDim,        activation='linear'))						#Output action layer - linear
+model1.compile(loss='logcosh', optimizer='adam', metrics=['mae'])	#logcosh- like MSE for small erros, linear for large. similar to huber
 
 #Dictionary of different models
 NNDict = 	{"1": model1}

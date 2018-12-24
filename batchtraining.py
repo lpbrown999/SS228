@@ -29,9 +29,9 @@ def compute_reward_vec(data, damageFactor=.01):
 		agentDamageTaken = sp[2]-s[2]
 		opponentDamageTaken = sp[2+16]-s[2+6]
 
-		#Kill, death
-		gotKill   = sp[3]<s[3]
-		gotKilled = sp[3+16]<s[3]
+		#Kill, death. float 1 (got kill / got killed) or 0 ()
+		gotKill   = float(sp[3]<s[3])
+		gotKilled = float(sp[3+16]<s[3])
 
 		r = gotKill - gotKilled + damageFactor * (opponentDamageTaken - agentDamageTaken)
 		rewardVec[i] = r
@@ -40,10 +40,12 @@ def compute_reward_vec(data, damageFactor=.01):
 
 
 #Can call directly by importing batchlearning
+
 def train_model(model, data, gamma, iterations):
 	
 	[m,n] = np.shape(data)
 	rewardVec = compute_reward_vec(data)
+
 
 	#Cannot pre compute x,y because model has to do new prediction each time.
 	for j in range(0,iterations):
@@ -63,8 +65,9 @@ def train_model(model, data, gamma, iterations):
 			targetVec = model.predict(s)[0]							#Current prediciton of action values in state s
 			targetVec[a] = target									#Fill in what we want to predict
 
-			#Fit the model
+			#Fit the model to predict the target vector.
 			model.fit(x=s, y=targetVec.reshape(-1,63), epochs=1, verbose=0)
+	
 	return model
 
 #If running from command line!
